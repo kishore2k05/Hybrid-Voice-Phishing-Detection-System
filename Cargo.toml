@@ -1,0 +1,4 @@
+[workspace]
+members = [
+    "text_cleaner"
+]
