@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { analyzeAudioAPI, analyzeTextAPI } from "./api";
 
 /* ─────────────────────────── DATA ─────────────────────────── */
 const SAMPLES = {
@@ -771,7 +772,7 @@ const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder=""
+              placeholder={`Paste or type the call transcript here...\n\nExample: 'Hello, this is Officer Azri from Bukit Aman. Your account has been flagged for suspicious activity. You must transfer RM5,000 immediately or face arrest...'`}
             />
             <div className="char-count">{text.length} / 2000</div>
           </div>
@@ -1255,24 +1256,34 @@ export default function VoiceGuardApp() {
     navigate("result", "scan");
   };
 
-  const analyzeText = (text) => {
+  const analyzeText = async (text) => {
     if (!text.trim()) { alert("Please enter a transcript to analyze."); return; }
     navigate("analyzing", "scan");
-    const lower = text.toLowerCase();
-    let type, title, desc, scam, warn, safe;
-    if (lower.includes("arrest") || lower.includes("tac") || lower.includes("transfer") || lower.includes("cybercrime") || lower.includes("drug")) {
-      type = "danger"; title = "Scam Detected"; desc = "High-confidence scam indicators detected. This transcript matches known vishing patterns."; scam = 92; warn = 5; safe = 3;
-    } else if (lower.includes("survey") || lower.includes("reward") || lower.includes("financial") || lower.includes("investment")) {
-      type = "warn"; title = "Slightly Suspicious"; desc = "Some risk indicators present. Exercise caution and verify the caller's identity."; scam = 12; warn = 76; safe = 12;
-    } else {
-      type = "safe"; title = "Call is Safe"; desc = "No significant scam indicators detected. The transcript appears to be from a legitimate source."; scam = 2; warn = 4; safe = 94;
+    try {
+      const res = await analyzeTextAPI(text);
+      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
+    } catch (err) {
+      const lower = text.toLowerCase();
+      let type, title, desc, scam, warn, safe;
+      if (lower.includes("arrest") || lower.includes("tac") || lower.includes("transfer") || lower.includes("cybercrime") || lower.includes("drug")) {
+        type = "danger"; title = "Scam Detected"; desc = "High-confidence scam indicators detected. This transcript matches known vishing patterns."; scam = 92; warn = 5; safe = 3;
+      } else if (lower.includes("survey") || lower.includes("reward") || lower.includes("financial") || lower.includes("investment")) {
+        type = "warn"; title = "Slightly Suspicious"; desc = "Some risk indicators present. Exercise caution and verify the caller's identity."; scam = 12; warn = 76; safe = 12;
+      } else {
+        type = "safe"; title = "Call is Safe"; desc = "No significant scam indicators detected. The transcript appears to be from a legitimate source."; scam = 2; warn = 4; safe = 94;
+      }
+      setTimeout(() => showResult(type, title, desc, scam, warn, safe), 1500);
     }
-    setTimeout(() => showResult(type, title, desc, scam, warn, safe), 2800);
   };
 
-  const analyzeAudio = () => {
+  const analyzeAudio = async (wavFile) => {
     navigate("analyzing", "scan");
-    setTimeout(() => showResult("danger", "Scam Detected", "High-confidence vishing patterns detected in audio. Authority impersonation and financial coercion identified.", 91, 6, 3), 2800);
+    try {
+      const res = await analyzeAudioAPI(wavFile);
+      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
+    } catch (err) {
+      setTimeout(() => showResult("danger", "Scam Detected", "High-confidence vishing patterns detected in audio. Authority impersonation and financial coercion identified.", 91, 6, 3), 2000);
+    }
   };
 
   const navItems = [
