@@ -5,7 +5,6 @@ import shutil
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,7 +45,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class AnalysisResult(BaseModel):
     type: str
     title: str
@@ -63,34 +61,38 @@ class TextRequest(BaseModel):
 
 def classify(text):
     result = predict(text)
+    scam_pct = round(result["scam"] * 100, 1)
+    warn_pct = round(result["slightly_suspicious"] * 100, 1)
+    safe_pct = round(result["neutral"] * 100, 1)
+    label = result["label"]
 
-    scam_pct = round(result['scam'] * 100, 1)
-    warn_pct = round(result['slightly_suspicious'] * 100, 1)
-    safe_pct = round(result['neutral'] * 100, 1)
-    label = result['label']
-
-    if label == 'scam':
+    if label == "scam":
         return {
             "type": "danger",
             "title": "Scam Detected",
             "desc": "High-confidence vishing indicators detected. This matches known scam patterns including authority impersonation and financial pressure.",
-            "scam": scam_pct, "warn": warn_pct, "safe": safe_pct,
+            "scam": scam_pct,
+            "warn": warn_pct,
+            "safe": safe_pct,
         }
-    elif label == 'slightly_suspicious':
+    elif label == "slightly_suspicious":
         return {
             "type": "warn",
             "title": "Slightly Suspicious",
             "desc": "Some risk indicators present. Exercise caution and verify the caller's identity independently.",
-            "scam": scam_pct, "warn": warn_pct, "safe": safe_pct,
+            "scam": scam_pct,
+            "warn": warn_pct,
+            "safe": safe_pct,
         }
     else:
         return {
             "type": "safe",
             "title": "Call is Safe",
             "desc": "No significant scam indicators detected. The conversation appears to be from a legitimate source.",
-            "scam": scam_pct, "warn": warn_pct, "safe": safe_pct,
+            "scam": scam_pct,
+            "warn": warn_pct,
+            "safe": safe_pct,
         }
-
 
 @app.get("/api/health")
 async def health():
@@ -104,25 +106,26 @@ async def analyze_audio(file: UploadFile = File(...)):
         raise HTTPException(400, "Only .wav files are supported")
 
     audio_path = UPLOAD_DIR / f"{uuid.uuid4().hex}{ext}"
-
     try:
         with open(audio_path, "wb") as f:
             f.write(await file.read())
 
         transcript = transcribe_audio(str(audio_path))
+        if transcript is None:
+            raise HTTPException(500, "Transcription failed — check AssemblyAI API key")
+
         logger.info(f"Transcribed: {transcript[:100]}...")
-
         scores = classify(transcript)
-
         return AnalysisResult(transcript=transcript, **scores)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(500, str(e))
     finally:
         if audio_path.exists():
             audio_path.unlink()
-
 
 @app.post("/api/analyze/text", response_model=AnalysisResult)
 async def analyze_text(request: TextRequest):
@@ -133,6 +136,7 @@ async def analyze_text(request: TextRequest):
         logger.error(f"Error: {e}")
         raise HTTPException(500, str(e))
 
-
 if FRONTEND_DIST.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
+    app.mount(
+        "/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend"
+    )
