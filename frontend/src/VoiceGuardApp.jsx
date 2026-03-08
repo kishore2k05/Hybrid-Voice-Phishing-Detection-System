@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { analyzeAudioAPI, analyzeTextAPI } from "./api";
 
-/* ─────────────────────────── DATA ─────────────────────────── */
 const SAMPLES = {
   scam: `Hello, this is Officer Razif from Bukit Aman Cybercrime Division. Your MyKad number has been linked to a drug trafficking case. You are required to transfer RM8,500 to our secure account immediately to prove your innocence. Do not inform anyone — this is a classified operation. Failure to comply will result in immediate arrest. Please provide your bank account and TAC number now.`,
   suspicious: `Good afternoon, I'm calling from a research company. We're conducting a survey on financial products. It'll only take 5 minutes. We'd like to know about your savings and investment habits. There's a small reward for completing — just need your name and contact details to send it. Are you currently using any online banking services?`,
@@ -62,7 +61,6 @@ const ALGO_STEPS = [
   { text: "Alert user", desc: "forward remaining suspicious entries to SIGNALLER for deletion" },
 ];
 
-/* ─────────────────────────── STYLES ─────────────────────────── */
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -138,7 +136,6 @@ body {
 @keyframes ocrScan { 0% { top: 0%; } 100% { top: 100%; } }
 @keyframes waveformMini { 0%,100% { height: 6px; } 50% { height: 22px; } }
 
-/* ===== HOME ===== */
 .home-header { padding: 50px 24px 16px; background: linear-gradient(180deg, #0A0C13 0%, var(--bg) 100%); }
 .home-greeting { font-size: 13px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
 .home-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 4px; letter-spacing: -0.5px; }
@@ -191,7 +188,6 @@ body {
 
 .section-title { padding: 0 24px; font-size: 14px; font-weight: 800; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
 
-/* ===== SENTRY CARDS ===== */
 .sentry-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 24px; margin-bottom: 14px; }
 .sentry-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
@@ -214,7 +210,6 @@ body {
 .sentry-pill.active { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
 .sentry-pill.alert { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); animation: alertPulse 1.5s ease infinite; }
 
-/* ===== HISTORY ===== */
 .history-list { padding: 0 24px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 .history-item {
   background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
@@ -234,7 +229,6 @@ body {
 .hist-badge.warn { background: rgba(245,158,11,0.15); color: var(--warning); }
 .hist-badge.danger { background: rgba(239,68,68,0.15); color: var(--danger); }
 
-/* ===== SCAN ===== */
 .scan-header, .result-header, .call-monitor-header, .contacts-header { padding: 50px 24px 16px; display: flex; align-items: center; gap: 14px; }
 .back-btn {
   width: 38px; height: 38px; background: var(--surface); border: 1px solid var(--border);
@@ -286,7 +280,6 @@ body {
 .analyze-btn:active { transform: scale(0.97); }
 .analyze-btn:disabled { opacity: 0.4; pointer-events: none; }
 
-/* ===== WAV UPLOAD ===== */
 .wav-drop-zone {
   margin: 0 24px 14px; background: var(--surface); border: 2px dashed var(--border);
   border-radius: 20px; padding: 28px 20px;
@@ -327,7 +320,6 @@ body {
 .wav-bar-mini:nth-child(5n) { animation-delay: 0.5s; }
 .wav-waveform-label { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 0.3px; }
 
-/* ===== ANALYZING ===== */
 .analyzing-content { padding: 50px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .pulse-ring { position: relative; width: 120px; height: 120px; margin-bottom: 28px; display: flex; align-items: center; justify-content: center; }
 .pulse-ring::before, .pulse-ring::after { content: ''; position: absolute; border: 2px solid var(--accent); border-radius: 50%; animation: ripple 2s ease-out infinite; width: 100%; height: 100%; }
@@ -364,7 +356,6 @@ body {
 .step-text { font-size: 13px; font-weight: 700; color: var(--text); }
 .step-sub { font-size: 11px; color: var(--text-muted); }
 
-/* ===== RESULT ===== */
 .result-hero { margin: 0 24px 16px; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; }
 .result-hero.safe { background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 100%); border: 1px solid rgba(34,197,94,0.25); }
 .result-hero.warn { background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.05) 100%); border: 1px solid rgba(245,158,11,0.25); }
@@ -414,7 +405,6 @@ body {
 .action-btn-danger { flex: 1.5; background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%); border: none; border-radius: 16px; padding: 14px; color: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(239,68,68,0.35); transition: all 0.2s; }
 .action-btn-danger:active { transform: scale(0.96); }
 
-/* ===== CALL MONITOR ===== */
 .call-status-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
 .call-status-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
 .number-compare { background: var(--surface2); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
@@ -452,7 +442,6 @@ body {
 .sim-btn.call-safe { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
 .sim-btn:active { transform: scale(0.97); }
 
-/* ===== CONTACTS ===== */
 .algo-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
 .algo-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
 .algo-step { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
@@ -486,7 +475,6 @@ body {
 .keep-btn { flex: 1; background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.2); border-radius: 10px; padding: 9px; color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .keep-btn:active { transform: scale(0.97); }
 
-/* ===== HISTORY SCREEN ===== */
 .hist-screen-header { padding: 50px 24px 16px; }
 .hist-screen-title { font-size: 26px; font-weight: 900; color: var(--text); }
 .hist-screen-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
@@ -501,7 +489,6 @@ body {
 .hist-type-badge.vishing { background: rgba(239,68,68,0.15); color: var(--danger); }
 .hist-type-badge.safe { background: rgba(34,197,94,0.15); color: var(--success); }
 
-/* ===== SETTINGS ===== */
 .settings-header { padding: 50px 24px 16px; }
 .settings-title { font-size: 26px; font-weight: 900; color: var(--text); }
 .settings-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
@@ -532,7 +519,6 @@ body {
 .perm-name { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'JetBrains Mono', monospace; }
 .perm-desc { font-size: 11px; color: var(--text-muted); flex: 1; text-align: right; }
 
-/* ===== SIGNALLER OVERLAY ===== */
 .alert-overlay {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.75); z-index: 200;
@@ -555,7 +541,6 @@ body {
 .signaller-detail-val.ocr { color: var(--accent); }
 .signaller-btn-row { display: flex; gap: 10px; }
 
-/* ===== BOTTOM NAV ===== */
 .bottom-nav { background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px; z-index: 50; flex-shrink: 0; position: relative; }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; transition: all 0.2s; background: none; border: none; }
 .nav-item:active { transform: scale(0.9); }
@@ -565,29 +550,18 @@ body {
 .nav-item:not(.active) .nav-label { color: var(--text-muted); }
 .nav-pip { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-top: -2px; }
 
-/* ===== INFO BANNER ===== */
 .info-banner { margin: 0 24px 12px; background: rgba(79,142,247,0.07); border: 1px solid rgba(79,142,247,0.2); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
 .info-banner-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 .info-banner-text { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
 .info-banner-text strong { color: var(--text); }
 `;
 
-/* ─────────────────────── SMALL COMPONENTS ─────────────────────── */
 const StatusBar = () => (
   <div className="status-bar">
     <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>9:41</span>
     <div className="status-icons">
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="white">
-        <rect x="0" y="8" width="3" height="4" rx="1" />
-        <rect x="4.5" y="5" width="3" height="7" rx="1" />
-        <rect x="9" y="2" width="3" height="10" rx="1" />
-        <rect x="13.5" y="0" width="3" height="12" rx="1" opacity="0.3" />
-      </svg>
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="white">
-        <path d="M8 2C10.5 2 12.7 3.1 14.2 4.8L15.5 3.5C13.6 1.4 11 0 8 0C5 0 2.4 1.4 0.5 3.5L1.8 4.8C3.3 3.1 5.5 2 8 2Z" />
-        <path d="M8 5C9.7 5 11.2 5.7 12.3 6.8L13.6 5.5C12.1 4 10.1 3 8 3C5.9 3 3.9 4 2.4 5.5L3.7 6.8C4.8 5.7 6.3 5 8 5Z" />
-        <circle cx="8" cy="10" r="2" />
-      </svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="7" rx="1" /><rect x="9" y="2" width="3" height="10" rx="1" /><rect x="13.5" y="0" width="3" height="12" rx="1" opacity="0.3" /></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2C10.5 2 12.7 3.1 14.2 4.8L15.5 3.5C13.6 1.4 11 0 8 0C5 0 2.4 1.4 0.5 3.5L1.8 4.8C3.3 3.1 5.5 2 8 2Z" /><path d="M8 5C9.7 5 11.2 5.7 12.3 6.8L13.6 5.5C12.1 4 10.1 3 8 3C5.9 3 3.9 4 2.4 5.5L3.7 6.8C4.8 5.7 6.3 5 8 5Z" /><circle cx="8" cy="10" r="2" /></svg>
       <span style={{ fontSize: 12 }}>🔋</span>
     </div>
   </div>
@@ -610,85 +584,39 @@ const Toggle = ({ on, onClick }) => (
   </div>
 );
 
-/* ─────────────────────── SCREEN COMPONENTS ─────────────────────── */
-
-/* ============ HOME SCREEN ============ */
 const HomeScreen = ({ onScan, onResult, onCallMonitor, onContacts }) => (
   <div className="screen">
     <div className="home-header">
       <div className="home-greeting">Welcome back</div>
       <div className="home-title">Voice<span>Guard</span> 🛡️</div>
     </div>
-
     <div className="shield-card">
       <div className="shield-badge">● ACTIVE</div>
       <div className="shield-icon">🛡️</div>
       <div className="shield-title">VENTINEL Protection Active</div>
       <div className="shield-sub">100% detection · SENTRY + SIGNALLER modules running</div>
     </div>
-
     <button className="scan-btn" onClick={onScan}>🎙️ Analyse Call</button>
-
     <div className="stats-row">
-      <div className="stat-card">
-        <div className="stat-num" style={{ color: "var(--success)" }}>24</div>
-        <div className="stat-label">Safe</div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-num" style={{ color: "var(--warning)" }}>6</div>
-        <div className="stat-label">Suspicious</div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-num" style={{ color: "var(--danger)" }}>3</div>
-        <div className="stat-label">Blocked</div>
-      </div>
+      <div className="stat-card"><div className="stat-num" style={{ color: "var(--success)" }}>24</div><div className="stat-label">Safe</div></div>
+      <div className="stat-card"><div className="stat-num" style={{ color: "var(--warning)" }}>6</div><div className="stat-label">Suspicious</div></div>
+      <div className="stat-card"><div className="stat-num" style={{ color: "var(--danger)" }}>3</div><div className="stat-label">Blocked</div></div>
     </div>
-
     <div className="section-title">SENTRY Modules</div>
     <div className="sentry-grid">
-      <div className="sentry-card" onClick={() => onCallMonitor("redirect")}>
-        <div className="sentry-card-icon blue">📞</div>
-        <div className="sentry-card-body">
-          <div className="sentry-card-title">Call Redirection Detection</div>
-          <div className="sentry-card-sub">Compares dialed vs. actual connected number</div>
-        </div>
-        <div className="sentry-pill active">ON</div>
-      </div>
-      <div className="sentry-card" onClick={() => onCallMonitor("overlay")}>
-        <div className="sentry-card-icon purple">🖥️</div>
-        <div className="sentry-card-body">
-          <div className="sentry-card-title">Display Overlay Detection</div>
-          <div className="sentry-card-sub">OCR screen capture vs. real incoming number</div>
-        </div>
-        <div className="sentry-pill active">ON</div>
-      </div>
-      <div className="sentry-card alert-card" onClick={onContacts}>
-        <div className="sentry-card-icon red">👥</div>
-        <div className="sentry-card-body">
-          <div className="sentry-card-title">Duplicated Contacts</div>
-          <div className="sentry-card-sub">2 suspicious contacts found · tap to review</div>
-        </div>
-        <div className="sentry-pill alert">2 ⚠️</div>
-      </div>
+      <div className="sentry-card" onClick={() => onCallMonitor("redirect")}><div className="sentry-card-icon blue">📞</div><div className="sentry-card-body"><div className="sentry-card-title">Call Redirection Detection</div><div className="sentry-card-sub">Compares dialed vs. actual connected number</div></div><div className="sentry-pill active">ON</div></div>
+      <div className="sentry-card" onClick={() => onCallMonitor("overlay")}><div className="sentry-card-icon purple">🖥️</div><div className="sentry-card-body"><div className="sentry-card-title">Display Overlay Detection</div><div className="sentry-card-sub">OCR screen capture vs. real incoming number</div></div><div className="sentry-pill active">ON</div></div>
+      <div className="sentry-card alert-card" onClick={onContacts}><div className="sentry-card-icon red">👥</div><div className="sentry-card-body"><div className="sentry-card-title">Duplicated Contacts</div><div className="sentry-card-sub">2 suspicious contacts found · tap to review</div></div><div className="sentry-pill alert">2 ⚠️</div></div>
     </div>
-
     <div className="section-title">Recent Activity</div>
     <div className="history-list">
       {RECENT_ACTIVITY.map((item) => (
-        <div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}>
-          <div className={`hist-icon ${item.level}`}>{item.icon}</div>
-          <div className="hist-info">
-            <div className="hist-name">{item.name}</div>
-            <div className="hist-time">{item.time}</div>
-          </div>
-          <div className={`hist-badge ${item.level}`}>{item.badge}</div>
-        </div>
+        <div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>
       ))}
     </div>
   </div>
 );
 
-/* ============ SCAN SCREEN ============ */
 const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
   const [tab, setTab] = useState("audio");
   const [text, setText] = useState("");
@@ -706,60 +634,32 @@ const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
     setWavFile(file);
   };
 
-  const removeWav = () => {
-    setWavFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
+  const removeWav = () => { setWavFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; };
   const fillSample = (key) => setText(SAMPLES[key]);
 
   return (
     <div className="screen">
-      <div className="scan-header">
-        <BackButton onClick={onBack} />
-        <div className="scan-title">Analyze Call</div>
-      </div>
-
+      <div className="scan-header"><BackButton onClick={onBack} /><div className="scan-title">Analyze Call</div></div>
       <div className="input-tabs">
         <div className={`input-tab ${tab === "audio" ? "active" : ""}`} onClick={() => setTab("audio")}>🎵 WAV Audio</div>
         <div className={`input-tab ${tab === "text" ? "active" : ""}`} onClick={() => setTab("text")}>📝 Transcript</div>
       </div>
-
       {tab === "audio" ? (
         <>
           {!wavFile ? (
             <div className="wav-drop-zone" onClick={() => fileInputRef.current?.click()}>
               <input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} />
-              <div className="wav-drop-icon">🎵</div>
-              <div className="wav-drop-title">Upload WAV Audio</div>
-              <div className="wav-drop-sub">Tap to select a .wav file from your device</div>
-              <div className="wav-format-badge">WAV only · audio/wav</div>
+              <div className="wav-drop-icon">🎵</div><div className="wav-drop-title">Upload WAV Audio</div><div className="wav-drop-sub">Tap to select a .wav file from your device</div><div className="wav-format-badge">WAV only · audio/wav</div>
             </div>
           ) : (
             <>
               <div className="wav-drop-zone loaded" onClick={() => fileInputRef.current?.click()}>
                 <input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} />
-                <div className="wav-drop-icon">✅</div>
-                <div className="wav-drop-title" style={{ color: "var(--success)" }}>WAV File Loaded</div>
-                <div className="wav-drop-sub">{wavFile.name}</div>
-                <div className="wav-format-badge" style={{ background: "rgba(34,197,94,0.12)", borderColor: "rgba(34,197,94,0.3)", color: "var(--success)" }}>
-                  {(wavFile.size / (1024 * 1024)).toFixed(1)} MB · audio/wav
-                </div>
+                <div className="wav-drop-icon">✅</div><div className="wav-drop-title" style={{ color: "var(--success)" }}>WAV File Loaded</div><div className="wav-drop-sub">{wavFile.name}</div>
+                <div className="wav-format-badge" style={{ background: "rgba(34,197,94,0.12)", borderColor: "rgba(34,197,94,0.3)", color: "var(--success)" }}>{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · audio/wav</div>
               </div>
-              <div className="wav-loaded-card">
-                <div className="wav-loaded-icon">🎵</div>
-                <div className="wav-loaded-info">
-                  <div className="wav-loaded-name">{wavFile.name}</div>
-                  <div className="wav-loaded-meta">{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · WAV · Ready</div>
-                </div>
-                <button className="wav-loaded-remove" onClick={removeWav}>✕</button>
-              </div>
-              <div className="wav-waveform-preview">
-                <div className="wav-waveform-bars">
-                  {Array.from({ length: 18 }).map((_, i) => <div key={i} className="wav-bar-mini" />)}
-                </div>
-                <div className="wav-waveform-label">Audio ready for analysis</div>
-              </div>
+              <div className="wav-loaded-card"><div className="wav-loaded-icon">🎵</div><div className="wav-loaded-info"><div className="wav-loaded-name">{wavFile.name}</div><div className="wav-loaded-meta">{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · WAV · Ready</div></div><button className="wav-loaded-remove" onClick={removeWav}>✕</button></div>
+              <div className="wav-waveform-preview"><div className="wav-waveform-bars">{Array.from({ length: 18 }).map((_, i) => <div key={i} className="wav-bar-mini" />)}</div><div className="wav-waveform-label">Audio ready for analysis</div></div>
             </>
           )}
           <InfoBanner text="Only <strong>.wav</strong> format is supported. The audio will be transcribed and analyzed for vishing indicators." />
@@ -769,21 +669,12 @@ const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
         <>
           <div className="input-area">
             <div className="input-area-label">📝 Call Transcript</div>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={`Paste or type the call transcript here...\n\nExample: 'Hello, this is Officer Azri from Bukit Aman. Your account has been flagged for suspicious activity. You must transfer RM5,000 immediately or face arrest...'`}
-            />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={`Paste or type the call transcript here...\n\nExample: 'Hello, this is Officer Azri from Bukit Aman. Your account has been flagged for suspicious activity. You must transfer RM5,000 immediately or face arrest...'`} />
             <div className="char-count">{text.length} / 2000</div>
           </div>
           <div className="quick-fills" style={{display:"none"}}>
             <div className="quick-fills-label">Quick fill samples</div>
-            <div className="quick-chips">
-              <div className="chip" onClick={() => fillSample("scam")}>🚨 Scam</div>
-              <div className="chip" onClick={() => fillSample("suspicious")}>🔍 Suspicious</div>
-              <div className="chip" onClick={() => fillSample("safe")}>✅ Safe</div>
-              <div className="chip" onClick={() => setText("")}>🗑️ Clear</div>
-            </div>
+            <div className="quick-chips"><div className="chip" onClick={() => fillSample("scam")}>🚨 Scam</div><div className="chip" onClick={() => fillSample("suspicious")}>🔍 Suspicious</div><div className="chip" onClick={() => fillSample("safe")}>✅ Safe</div><div className="chip" onClick={() => setText("")}>🗑️ Clear</div></div>
           </div>
           <button className="analyze-btn" onClick={() => onAnalyzeText(text)}>🔍 Analyze Now</button>
         </>
@@ -792,48 +683,29 @@ const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
   );
 };
 
-/* ============ ANALYZING SCREEN ============ */
 const AnalyzingScreen = () => (
   <div className="screen">
     <div className="analyzing-content">
-      <div className="pulse-ring">
-        <div className="pulse-inner">🔍</div>
-      </div>
+      <div className="pulse-ring"><div className="pulse-inner">🔍</div></div>
       <div className="analyzing-title">Analyzing Transcript</div>
       <div className="analyzing-sub">Running AI model to detect<br />vishing patterns...</div>
-      <div className="waveform">
-        {Array.from({ length: 12 }).map((_, i) => <div key={i} className="wave-bar" />)}
-      </div>
+      <div className="waveform">{Array.from({ length: 12 }).map((_, i) => <div key={i} className="wave-bar" />)}</div>
       <div className="steps-list">
-        <div className="step-row">
-          <div className="step-indicator done">✓</div>
-          <div><div className="step-text">Text Preprocessing</div><div className="step-sub">Tokenization & cleaning</div></div>
-        </div>
-        <div className="step-row">
-          <div className="step-indicator active-step"><div className="dot" /></div>
-          <div><div className="step-text">Feature Extraction</div><div className="step-sub">Analyzing linguistic patterns</div></div>
-        </div>
-        <div className="step-row">
-          <div className="step-indicator pending">3</div>
-          <div><div className="step-text">Model Classification</div><div className="step-sub">Neutral / Suspicious / Scam</div></div>
-        </div>
+        <div className="step-row"><div className="step-indicator done">✓</div><div><div className="step-text">Text Preprocessing</div><div className="step-sub">Tokenization & cleaning</div></div></div>
+        <div className="step-row"><div className="step-indicator active-step"><div className="dot" /></div><div><div className="step-text">Feature Extraction</div><div className="step-sub">Analyzing linguistic patterns</div></div></div>
+        <div className="step-row"><div className="step-indicator pending">3</div><div><div className="step-text">Model Classification</div><div className="step-sub">Neutral / Suspicious / Scam</div></div></div>
       </div>
     </div>
   </div>
 );
 
-/* ============ RESULT SCREEN ============ */
 const ResultScreen = ({ onBack, onHome, onScan, result }) => {
   const [animatedScam, setAnimatedScam] = useState(0);
   const [animatedWarn, setAnimatedWarn] = useState(0);
   const [animatedSafe, setAnimatedSafe] = useState(0);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      setAnimatedScam(result.scam);
-      setAnimatedWarn(result.warn);
-      setAnimatedSafe(result.safe);
-    }, 200);
+    const t = setTimeout(() => { setAnimatedScam(result.scam); setAnimatedWarn(result.warn); setAnimatedSafe(result.safe); }, 200);
     return () => clearTimeout(t);
   }, [result]);
 
@@ -843,186 +715,84 @@ const ResultScreen = ({ onBack, onHome, onScan, result }) => {
 
   return (
     <div className="screen">
-      <div className="result-header">
-        <BackButton onClick={onBack} />
-        <div className="scan-title">Detection Result</div>
-      </div>
-
+      <div className="result-header"><BackButton onClick={onBack} /><div className="scan-title">Detection Result</div></div>
       <div className={`result-hero ${result.type}`}>
         <div className={`result-icon ${result.type}`}>{icons[result.type]}</div>
         <div className={`result-label ${result.type}`}>{labels[result.type]}</div>
         <div className="result-title">{result.title}</div>
         <div className="result-desc">{result.desc}</div>
       </div>
-
       <div className="confidence-card">
         <div className="conf-label">Confidence Scores</div>
         <div className="conf-bars">
-          <div className="conf-row">
-            <div className="conf-name">🚨 Scam</div>
-            <div className="conf-bar-wrap"><div className="conf-bar-fill danger" style={{ width: `${animatedScam}%` }} /></div>
-            <div className="conf-pct danger">{animatedScam}%</div>
-          </div>
-          <div className="conf-row">
-            <div className="conf-name">🔍 Suspicious</div>
-            <div className="conf-bar-wrap"><div className="conf-bar-fill warn" style={{ width: `${animatedWarn}%` }} /></div>
-            <div className="conf-pct warn">{animatedWarn}%</div>
-          </div>
-          <div className="conf-row">
-            <div className="conf-name">✅ Neutral</div>
-            <div className="conf-bar-wrap"><div className="conf-bar-fill safe" style={{ width: `${animatedSafe}%` }} /></div>
-            <div className="conf-pct safe">{animatedSafe}%</div>
-          </div>
+          <div className="conf-row"><div className="conf-name">🚨 Scam</div><div className="conf-bar-wrap"><div className="conf-bar-fill danger" style={{ width: `${animatedScam}%` }} /></div><div className="conf-pct danger">{animatedScam}%</div></div>
+          <div className="conf-row"><div className="conf-name">🔍 Suspicious</div><div className="conf-bar-wrap"><div className="conf-bar-fill warn" style={{ width: `${animatedWarn}%` }} /></div><div className="conf-pct warn">{animatedWarn}%</div></div>
+          <div className="conf-row"><div className="conf-name">✅ Neutral</div><div className="conf-bar-wrap"><div className="conf-bar-fill safe" style={{ width: `${animatedSafe}%` }} /></div><div className="conf-pct safe">{animatedSafe}%</div></div>
         </div>
       </div>
-
       <div className="flags-card">
         <div className="flags-title">Detected Indicators</div>
-        {flags.map((f, i) => (
-          <div key={i} className="flag-item">
-            <div className={`flag-dot ${f.type}`} />
-            <div className="flag-text"><strong>{f.label}</strong> {f.text}</div>
-          </div>
-        ))}
+        {flags.map((f, i) => (<div key={i} className="flag-item"><div className={`flag-dot ${f.type}`} /><div className="flag-text"><strong>{f.label}</strong> {f.text}</div></div>))}
       </div>
-
-      <div className="action-row">
-        <button className="action-btn-sec" onClick={onScan}>↩ Scan Again</button>
-        <button className="action-btn-pri" onClick={onHome}>✓ Done</button>
-      </div>
+      <div className="action-row"><button className="action-btn-sec" onClick={onScan}>↩ Scan Again</button><button className="action-btn-pri" onClick={onHome}>✓ Done</button></div>
     </div>
   );
 };
 
-/* ============ CALL MONITOR SCREEN ============ */
 const CallMonitorScreen = ({ onBack, mode }) => {
   const [sim, setSim] = useState("safe");
   const [showAlert, setShowAlert] = useState(false);
   const [alertData, setAlertData] = useState(null);
-
   const isOverlay = mode === "overlay";
 
   const monitorState = {
-    safe: {
-      dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--text)", connected: "010-1234-1234", connClass: "match",
-      ocrDisplayed: "010-1234-1234", ocrContact: "Mom", ocrIcon: "📞",
-      status: "ok", statusIcon: "✅", statusText: "Numbers Match — No Attack Detected", statusSub: "Call Redirection & Display Overlay: CLEAR",
-    },
-    redirect: {
-      dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--success)", connected: "010-9090-0909 ⚠️", connClass: "mismatch",
-      ocrDisplayed: "010-1234-1234", ocrContact: "Mom (Fake Screen)", ocrIcon: "⚠️",
-      status: "alert", statusIcon: "🚨", statusText: "Call Redirection Detected!", statusSub: "Outgoing number was silently changed by vishing app",
-    },
-    overlay: {
-      dialed: "010-9090-0909", ocr: "010-1234-1234 (Fake)", ocrColor: "var(--danger)", connected: "010-9090-0909", connClass: "match",
-      ocrDisplayed: "010-1234-1234", ocrContact: "Mom (FAKE OVERLAY)", ocrIcon: "🖥️",
-      status: "alert", statusIcon: "🚨", statusText: "Display Overlay Attack Detected!", statusSub: "OCR number differs from real incoming number",
-    },
+    safe: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--text)", connected: "010-1234-1234", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom", ocrIcon: "📞", status: "ok", statusIcon: "✅", statusText: "Numbers Match — No Attack Detected", statusSub: "Call Redirection & Display Overlay: CLEAR" },
+    redirect: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--success)", connected: "010-9090-0909 ⚠️", connClass: "mismatch", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (Fake Screen)", ocrIcon: "⚠️", status: "alert", statusIcon: "🚨", statusText: "Call Redirection Detected!", statusSub: "Outgoing number was silently changed by vishing app" },
+    overlay: { dialed: "010-9090-0909", ocr: "010-1234-1234 (Fake)", ocrColor: "var(--danger)", connected: "010-9090-0909", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (FAKE OVERLAY)", ocrIcon: "🖥️", status: "alert", statusIcon: "🚨", statusText: "Display Overlay Attack Detected!", statusSub: "OCR number differs from real incoming number" },
   };
-
   const s = monitorState[sim];
 
   const triggerSim = (type) => {
     setSim(type);
     if (type !== "safe") {
-      setTimeout(() => {
-        setAlertData({
-          type: type === "redirect" ? "call-redirect" : "display-overlay",
-          dialed: monitorState[type].dialed,
-          ocr: monitorState[type].ocr,
-          actual: monitorState[type].connected,
-          module: type === "redirect" ? "Call Redirection" : "Display Overlay",
-        });
-        setShowAlert(true);
-      }, 600);
+      setTimeout(() => { setAlertData({ type: type === "redirect" ? "call-redirect" : "display-overlay", dialed: monitorState[type].dialed, ocr: monitorState[type].ocr, actual: monitorState[type].connected, module: type === "redirect" ? "Call Redirection" : "Display Overlay" }); setShowAlert(true); }, 600);
     }
   };
 
   return (
     <div className="screen">
-      <div className="call-monitor-header">
-        <BackButton onClick={onBack} />
-        <div className="scan-title">{isOverlay ? "Display Overlay Monitor" : "Call Redirection Monitor"}</div>
-      </div>
-
-      <InfoBanner text={isOverlay
-        ? "SENTRY captures the screen using MediaProjection and runs ML Kit OCR to extract the displayed number, then compares it against the actual API-retrieved number."
-        : "SENTRY compares the number you dialed with the number that actually connects. Any mismatch triggers a SIGNALLER alert instantly."
-      } />
-
-      <div className="ocr-preview">
-        <div className="ocr-preview-title">
-          <span>Screen Capture (OCR)</span>
-          <span className="ocr-badge">📷 ML Kit</span>
-        </div>
-        <div className="ocr-screen-mock">
-          <div className="ocr-scan-line" />
-          <div className="ocr-call-icon">{s.ocrIcon}</div>
-          <div className="ocr-displayed-num">{s.ocrDisplayed}</div>
-          <div className="ocr-contact-name">{s.ocrContact}</div>
-        </div>
-      </div>
-
+      <div className="call-monitor-header"><BackButton onClick={onBack} /><div className="scan-title">{isOverlay ? "Display Overlay Monitor" : "Call Redirection Monitor"}</div></div>
+      <InfoBanner text={isOverlay ? "SENTRY captures the screen using MediaProjection and runs ML Kit OCR to extract the displayed number, then compares it against the actual API-retrieved number." : "SENTRY compares the number you dialed with the number that actually connects. Any mismatch triggers a SIGNALLER alert instantly."} />
+      <div className="ocr-preview"><div className="ocr-preview-title"><span>Screen Capture (OCR)</span><span className="ocr-badge">📷 ML Kit</span></div><div className="ocr-screen-mock"><div className="ocr-scan-line" /><div className="ocr-call-icon">{s.ocrIcon}</div><div className="ocr-displayed-num">{s.ocrDisplayed}</div><div className="ocr-contact-name">{s.ocrContact}</div></div></div>
       <div className="call-status-card">
         <div className="call-status-title">{isOverlay ? "OCR vs. Real Number — SENTRY" : "Number Comparison — SENTRY"}</div>
         <div className="number-compare">
-          <div className="number-row">
-            <div className="number-label">{isOverlay ? "Actual Incoming (API)" : "Dialed by User"}</div>
-            <div className="number-value">{s.dialed}</div>
-          </div>
+          <div className="number-row"><div className="number-label">{isOverlay ? "Actual Incoming (API)" : "Dialed by User"}</div><div className="number-value">{s.dialed}</div></div>
           <div className="number-divider" />
-          <div className="number-row">
-            <div className="number-label">{isOverlay ? "OCR Extracted (Screen)" : "OCR Extracted (Screen)"}</div>
-            <div className="number-value" style={{ color: s.ocrColor }}>{s.ocr}</div>
-          </div>
+          <div className="number-row"><div className="number-label">{isOverlay ? "OCR Extracted (Screen)" : "OCR Extracted (Screen)"}</div><div className="number-value" style={{ color: s.ocrColor }}>{s.ocr}</div></div>
           <div className="number-divider" />
-          <div className="number-row">
-            <div className="number-label">{isOverlay ? "Verdict" : "Actual Connected Number"}</div>
-            <div className={`number-value ${s.connClass}`}>{isOverlay && sim === "safe" ? "Match ✓" : s.connected}</div>
-          </div>
+          <div className="number-row"><div className="number-label">{isOverlay ? "Verdict" : "Actual Connected Number"}</div><div className={`number-value ${s.connClass}`}>{isOverlay && sim === "safe" ? "Match ✓" : s.connected}</div></div>
         </div>
-        <div className={`detection-status ${s.status}`} style={{ margin: 0 }}>
-          <div className="detection-status-icon">{s.statusIcon}</div>
-          <div>
-            <div className="detection-status-text">{s.statusText}</div>
-            <div className="detection-status-sub">{s.statusSub}</div>
-          </div>
-        </div>
+        <div className={`detection-status ${s.status}`} style={{ margin: 0 }}><div className="detection-status-icon">{s.statusIcon}</div><div><div className="detection-status-text">{s.statusText}</div><div className="detection-status-sub">{s.statusSub}</div></div></div>
       </div>
-
       <div style={{ height: 14 }} />
       <button className="sim-btn call-redirect" onClick={() => triggerSim("redirect")}>📞 Simulate Call Redirection</button>
       <button className="sim-btn call-overlay" onClick={() => triggerSim("overlay")}>🖥️ Simulate Display Overlay</button>
       <button className="sim-btn call-safe" onClick={() => { setSim("safe"); setShowAlert(false); }}>✅ Simulate Safe Call</button>
       <div style={{ height: 20 }} />
-
-      {showAlert && alertData && (
-        <SignallerAlert
-          data={alertData}
-          onDismiss={() => setShowAlert(false)}
-          onEndCall={() => { setShowAlert(false); setSim("safe"); }}
-        />
-      )}
+      {showAlert && alertData && <SignallerAlert data={alertData} onDismiss={() => setShowAlert(false)} onEndCall={() => { setShowAlert(false); setSim("safe"); }} />}
     </div>
   );
 };
 
-/* ============ SIGNALLER ALERT ============ */
 const SignallerAlert = ({ data, onDismiss, onEndCall }) => {
   const titles = { "call-redirect": "Call Redirection Blocked!", "display-overlay": "Display Overlay Detected!" };
   const subs = { "call-redirect": "Your outgoing call was silently hijacked", "display-overlay": "Fake screen is hiding the real caller ID" };
   const badges = { "call-redirect": "⚠️ Call Redirection Attack", "display-overlay": "🖥️ Display Overlay Attack" };
-
   return (
     <div className="alert-overlay">
       <div className="signaller-panel">
-        <div className="signaller-header">
-          <div className="signaller-icon">🚨</div>
-          <div>
-            <div className="signaller-title">{titles[data.type]}</div>
-            <div className="signaller-sub">{subs[data.type]}</div>
-          </div>
-        </div>
+        <div className="signaller-header"><div className="signaller-icon">🚨</div><div><div className="signaller-title">{titles[data.type]}</div><div className="signaller-sub">{subs[data.type]}</div></div></div>
         <div className="signaller-module-badge">{badges[data.type]}</div>
         <div className="signaller-details">
           <div className="signaller-detail-row"><div className="signaller-detail-key">Dialed Number</div><div className="signaller-detail-val original">{data.dialed}</div></div>
@@ -1030,203 +800,66 @@ const SignallerAlert = ({ data, onDismiss, onEndCall }) => {
           <div className="signaller-detail-row"><div className="signaller-detail-key">Actual Connected</div><div className="signaller-detail-val mismatch">{data.actual}</div></div>
           <div className="signaller-detail-row"><div className="signaller-detail-key">Detection Module</div><div className="signaller-detail-val ocr">{data.module}</div></div>
         </div>
-        <div className="signaller-btn-row">
-          <button className="action-btn-sec" onClick={onDismiss}>Dismiss</button>
-          <button className="action-btn-danger" onClick={onEndCall}>📵 End Call</button>
-        </div>
+        <div className="signaller-btn-row"><button className="action-btn-sec" onClick={onDismiss}>Dismiss</button><button className="action-btn-danger" onClick={onEndCall}>📵 End Call</button></div>
       </div>
     </div>
   );
 };
 
-/* ============ CONTACTS SCREEN ============ */
 const ContactsScreen = ({ onBack }) => {
   const [deleted, setDeleted] = useState({});
-
-  const deleteContact = (id, name) => {
-    setDeleted((prev) => ({ ...prev, [id]: true }));
-    setTimeout(() => alert(`✅ Contact deleted: ${name}\n\nSIGNALLER has removed this entry from your contacts.`), 400);
-  };
-
+  const deleteContact = (id, name) => { setDeleted((prev) => ({ ...prev, [id]: true })); setTimeout(() => alert(`✅ Contact deleted: ${name}\n\nSIGNALLER has removed this entry from your contacts.`), 400); };
   return (
     <div className="screen">
-      <div className="contacts-header">
-        <BackButton onClick={onBack} />
-        <div className="scan-title">Duplicated Contacts</div>
-      </div>
-
+      <div className="contacts-header"><BackButton onClick={onBack} /><div className="scan-title">Duplicated Contacts</div></div>
       <InfoBanner text="SENTRY scans for contacts sharing the same name or with secondary numbers not present in your call/SMS history. These are potential Duplicated Contacts Attacks." />
-
-      <div className="algo-card">
-        <div className="algo-title">Algorithm — How SENTRY Detects Duplicates</div>
-        {ALGO_STEPS.map((step, i) => (
-          <div key={i} className="algo-step">
-            <div className="algo-step-num">{i + 1}</div>
-            <div className="algo-step-text"><strong>{step.text}</strong> — {step.desc}</div>
-          </div>
-        ))}
-      </div>
-
+      <div className="algo-card"><div className="algo-title">Algorithm — How SENTRY Detects Duplicates</div>{ALGO_STEPS.map((step, i) => (<div key={i} className="algo-step"><div className="algo-step-num">{i + 1}</div><div className="algo-step-text"><strong>{step.text}</strong> — {step.desc}</div></div>))}</div>
       <div className="section-title">⚠️ Suspicious Contacts (2)</div>
-
-      {!deleted.contact1 && (
-        <div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}>
-          <div className="contact-header-row">
-            <div className="contact-avatar suspicious">⚠️</div>
-            <div className="contact-name">Mom</div>
-            <div className="contact-tag dup">DUPLICATE NAME</div>
-          </div>
-          <div className="contact-numbers">
-            <div className="contact-num-row"><div className="contact-num-badge original">Original</div><div className="contact-num-value">010-1234-1234</div></div>
-            <div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">010-9090-0909</div></div>
-            <div className="contact-num-row"><div className="contact-num-badge history">In call history</div><div className="contact-num-value">010-1234-1234 ✓</div></div>
-          </div>
-          <div className="delete-row">
-            <button className="del-btn" onClick={() => deleteContact("contact1", "Mom (010-9090-0909)")}>🗑️ Delete Suspicious</button>
-            <button className="keep-btn">Keep Both</button>
-          </div>
-        </div>
-      )}
-
-      {!deleted.contact2 && (
-        <div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}>
-          <div className="contact-header-row">
-            <div className="contact-avatar suspicious">⚠️</div>
-            <div className="contact-name">Maybank CS</div>
-            <div className="contact-tag dup">UNKNOWN NUMBER</div>
-          </div>
-          <div className="contact-numbers">
-            <div className="contact-num-row"><div className="contact-num-badge original">Known</div><div className="contact-num-value">1300-888-688</div></div>
-            <div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">011-5555-7777</div></div>
-          </div>
-          <div className="delete-row">
-            <button className="del-btn" onClick={() => deleteContact("contact2", "Maybank CS (011-5555-7777)")}>🗑️ Delete Suspicious</button>
-            <button className="keep-btn">Keep Both</button>
-          </div>
-        </div>
-      )}
-
+      {!deleted.contact1 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Mom</div><div className="contact-tag dup">DUPLICATE NAME</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Original</div><div className="contact-num-value">010-1234-1234</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">010-9090-0909</div></div><div className="contact-num-row"><div className="contact-num-badge history">In call history</div><div className="contact-num-value">010-1234-1234 ✓</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact1", "Mom (010-9090-0909)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}
+      {!deleted.contact2 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Maybank CS</div><div className="contact-tag dup">UNKNOWN NUMBER</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Known</div><div className="contact-num-value">1300-888-688</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">011-5555-7777</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact2", "Maybank CS (011-5555-7777)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}
       <div className="section-title" style={{ marginTop: 6 }}>✅ Trusted Contacts</div>
-      <div className="contact-item whitelist">
-        <div className="contact-header-row">
-          <div className="contact-avatar whitelist">✅</div>
-          <div className="contact-name">Dad</div>
-          <div className="contact-tag ok">WHITELISTED</div>
-        </div>
-        <div className="contact-numbers">
-          <div className="contact-num-row"><div className="contact-num-badge history">Call log</div><div className="contact-num-value">010-5678-5678</div></div>
-        </div>
-        <div className="whitelist-note">✓ Number found in recent call history — trusted</div>
-      </div>
+      <div className="contact-item whitelist"><div className="contact-header-row"><div className="contact-avatar whitelist">✅</div><div className="contact-name">Dad</div><div className="contact-tag ok">WHITELISTED</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge history">Call log</div><div className="contact-num-value">010-5678-5678</div></div></div><div className="whitelist-note">✓ Number found in recent call history — trusted</div></div>
       <div style={{ height: 20 }} />
     </div>
   );
 };
 
-/* ============ HISTORY SCREEN ============ */
 const HistoryScreen = ({ onResult }) => {
   const [filter, setFilter] = useState("all");
   const filtered = HISTORY_ITEMS.filter((item) => filter === "all" || item.type === filter);
-
   return (
     <div className="screen">
-      <div className="hist-screen-header">
-        <div className="hist-screen-title">Detection History</div>
-        <div className="hist-screen-sub">All VENTINEL events & scan results</div>
-      </div>
-
-      <div className="hist-filter-row">
-        {[["all", "All"], ["attack", "Attacks"], ["scan", "Transcript"], ["safe", "Safe"]].map(([key, label]) => (
-          <div key={key} className={`hist-filter ${filter === key ? "active" : ""}`} onClick={() => setFilter(key)}>{label}</div>
-        ))}
-      </div>
-
-      <div className="history-list">
-        {filtered.map((item) => (
-          <div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}>
-            <div className={`hist-icon ${item.level}`}>{item.icon}</div>
-            <div className="hist-info">
-              <div className="hist-name">{item.name}</div>
-              <div className="hist-time">{item.time}</div>
-              <div><span className={`hist-type-badge ${item.typeBadgeClass}`}>{item.typeBadge}</span></div>
-            </div>
-            <div className={`hist-badge ${item.level}`}>{item.badge}</div>
-          </div>
-        ))}
-      </div>
+      <div className="hist-screen-header"><div className="hist-screen-title">Detection History</div><div className="hist-screen-sub">All VENTINEL events & scan results</div></div>
+      <div className="hist-filter-row">{[["all", "All"], ["attack", "Attacks"], ["scan", "Transcript"], ["safe", "Safe"]].map(([key, label]) => (<div key={key} className={`hist-filter ${filter === key ? "active" : ""}`} onClick={() => setFilter(key)}>{label}</div>))}</div>
+      <div className="history-list">{filtered.map((item) => (<div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div><div><span className={`hist-type-badge ${item.typeBadgeClass}`}>{item.typeBadge}</span></div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>))}</div>
     </div>
   );
 };
 
-/* ============ SETTINGS SCREEN ============ */
 const SettingsScreen = () => {
-  const [toggles, setToggles] = useState({
-    callRedirect: true, displayOverlay: true, dupContacts: true,
-    alertPopup: true, vibration: true, voicePrompt: false,
-  });
-
+  const [toggles, setToggles] = useState({ callRedirect: true, displayOverlay: true, dupContacts: true, alertPopup: true, vibration: true, voicePrompt: false });
   const toggle = (key) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-
   const sentryModules = [
     { key: "callRedirect", icon: "📞", color: "blue", name: "Call Redirection Detection", desc: "Compare dialed vs. actual connected number" },
     { key: "displayOverlay", icon: "🖥️", color: "purple", name: "Display Overlay Detection", desc: "OCR screen capture comparison via ML Kit" },
     { key: "dupContacts", icon: "👥", color: "orange", name: "Duplicated Contacts Scan", desc: "Run when device is in IDLE state" },
   ];
-
   const alertModules = [
     { key: "alertPopup", icon: "🔔", color: "red", name: "Alert Pop-up (SIGNALLER)", desc: "Show warning overlay on attack detection" },
     { key: "vibration", icon: "📳", color: "green", name: "Vibration Alert", desc: "Vibrate device when attack is detected" },
     { key: "voicePrompt", icon: "🗣️", color: "orange", name: "Voice Prompt Alert", desc: "Audio warning for wearable/Bluetooth users" },
   ];
-
   return (
     <div className="screen">
-      <div className="settings-header">
-        <div className="settings-title">Settings</div>
-        <div className="settings-sub">VENTINEL configuration & permissions</div>
-      </div>
-
-      <div className="settings-section">
-        <div className="settings-section-label">SENTRY Detection Modules</div>
-        {sentryModules.map((m) => (
-          <div key={m.key} className="setting-item" onClick={() => toggle(m.key)}>
-            <div className={`setting-icon ${m.color}`}>{m.icon}</div>
-            <div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div>
-            <Toggle on={toggles[m.key]} />
-          </div>
-        ))}
-      </div>
-
-      <div className="settings-section">
-        <div className="settings-section-label">SIGNALLER Alerts</div>
-        {alertModules.map((m) => (
-          <div key={m.key} className="setting-item" onClick={() => toggle(m.key)}>
-            <div className={`setting-icon ${m.color}`}>{m.icon}</div>
-            <div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div>
-            <Toggle on={toggles[m.key]} />
-          </div>
-        ))}
-      </div>
-
-      <div className="settings-section">
-        <div className="settings-section-label">Android Permissions</div>
-        <div className="setting-item" style={{ cursor: "default", flexDirection: "column", alignItems: "stretch" }}>
-          <div className="algo-title" style={{ marginBottom: 12 }}>Required by SENTRY</div>
-          {PERMISSIONS.map((p, i) => (
-            <div key={i} className="perm-item">
-              <div className={`perm-status ${p.granted ? "granted" : "denied"}`} />
-              <div className="perm-name">{p.name}</div>
-              <div className="perm-desc">{p.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="settings-header"><div className="settings-title">Settings</div><div className="settings-sub">VENTINEL configuration & permissions</div></div>
+      <div className="settings-section"><div className="settings-section-label">SENTRY Detection Modules</div>{sentryModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div>
+      <div className="settings-section"><div className="settings-section-label">SIGNALLER Alerts</div>{alertModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div>
+      <div className="settings-section"><div className="settings-section-label">Android Permissions</div><div className="setting-item" style={{ cursor: "default", flexDirection: "column", alignItems: "stretch" }}><div className="algo-title" style={{ marginBottom: 12 }}>Required by SENTRY</div>{PERMISSIONS.map((p, i) => (<div key={i} className="perm-item"><div className={`perm-status ${p.granted ? "granted" : "denied"}`} /><div className="perm-name">{p.name}</div><div className="perm-desc">{p.desc}</div></div>))}</div></div>
       <div style={{ height: 20 }} />
     </div>
   );
 };
 
-/* ─────────────────────── MAIN APP ─────────────────────── */
 export default function VoiceGuardApp() {
   const [screen, setScreen] = useState("home");
   const [activeNav, setActiveNav] = useState("home");
@@ -1246,10 +879,7 @@ export default function VoiceGuardApp() {
   const goSettings = () => navigate("settings", "settings");
   const goContacts = () => navigate("contacts", "home");
 
-  const goCallMonitor = (mode) => {
-    setCallMonitorMode(mode);
-    navigate("callMonitor", "home");
-  };
+  const goCallMonitor = (mode) => { setCallMonitorMode(mode); navigate("callMonitor", "home"); };
 
   const showResult = (type, title, desc, scam, warn, safe) => {
     setResult({ type, title, desc, scam, warn, safe });
@@ -1263,16 +893,9 @@ export default function VoiceGuardApp() {
       const res = await analyzeTextAPI(text);
       showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
     } catch (err) {
-      const lower = text.toLowerCase();
-      let type, title, desc, scam, warn, safe;
-      if (lower.includes("arrest") || lower.includes("tac") || lower.includes("transfer") || lower.includes("cybercrime") || lower.includes("drug")) {
-        type = "danger"; title = "Scam Detected"; desc = "High-confidence scam indicators detected. This transcript matches known vishing patterns."; scam = 92; warn = 5; safe = 3;
-      } else if (lower.includes("survey") || lower.includes("reward") || lower.includes("financial") || lower.includes("investment")) {
-        type = "warn"; title = "Slightly Suspicious"; desc = "Some risk indicators present. Exercise caution and verify the caller's identity."; scam = 12; warn = 76; safe = 12;
-      } else {
-        type = "safe"; title = "Call is Safe"; desc = "No significant scam indicators detected. The transcript appears to be from a legitimate source."; scam = 2; warn = 4; safe = 94;
-      }
-      setTimeout(() => showResult(type, title, desc, scam, warn, safe), 1500);
+      console.error("Text analysis error:", err);
+      alert("Analysis failed: " + (err.message || "Could not connect to backend. Is the server running on port 8000?"));
+      navigate("scan", "scan");
     }
   };
 
@@ -1282,7 +905,9 @@ export default function VoiceGuardApp() {
       const res = await analyzeAudioAPI(wavFile);
       showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
     } catch (err) {
-      setTimeout(() => showResult("danger", "Scam Detected", "High-confidence vishing patterns detected in audio. Authority impersonation and financial coercion identified.", 91, 6, 3), 2000);
+      console.error("Audio analysis error:", err);
+      alert("Analysis failed: " + (err.message || "Could not connect to backend. Is the server running on port 8000?"));
+      navigate("scan", "scan");
     }
   };
 
@@ -1311,24 +936,10 @@ export default function VoiceGuardApp() {
     <>
       <style>{css}</style>
       <div className="phone-frame">
-        <div className="notch">
-          <div className="notch-dot" />
-          <div className="notch-cam" />
-          <div className="notch-dot" />
-        </div>
+        <div className="notch"><div className="notch-dot" /><div className="notch-cam" /><div className="notch-dot" /></div>
         <StatusBar />
-        <div className="app-content" ref={contentRef}>
-          {renderScreen()}
-        </div>
-        <div className="bottom-nav">
-          {navItems.map((item) => (
-            <button key={item.id} className={`nav-item ${activeNav === item.id ? "active" : ""}`} onClick={item.action}>
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-              {activeNav === item.id && <div className="nav-pip" />}
-            </button>
-          ))}
-        </div>
+        <div className="app-content" ref={contentRef}>{renderScreen()}</div>
+        <div className="bottom-nav">{navItems.map((item) => (<button key={item.id} className={`nav-item ${activeNav === item.id ? "active" : ""}`} onClick={item.action}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span>{activeNav === item.id && <div className="nav-pip" />}</button>))}</div>
       </div>
     </>
   );
