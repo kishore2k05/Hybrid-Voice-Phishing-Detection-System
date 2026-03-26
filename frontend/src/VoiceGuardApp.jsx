@@ -12,18 +12,14 @@ const FLAG_SETS = {
     { type: "danger", label: "Authority Impersonation:", text: "Claims to be law enforcement (Bukit Aman)" },
     { type: "danger", label: "Urgency & Threat:", text: "Threatens immediate arrest to pressure victim" },
     { type: "danger", label: "Credential Request:", text: "Asks for bank account & TAC number" },
-    { type: "warn", label: "Secrecy Demand:", text: "Instructs victim not to inform anyone" },
-    { type: "warn", label: "Financial Pressure:", text: "Demands specific large sum transfer" },
   ],
   warn: [
     { type: "warn", label: "Information Harvesting:", text: "Requesting personal financial details" },
     { type: "warn", label: "Vague Reward Offer:", text: "Incentive used to lower guard" },
-    { type: "safe", label: "No Immediate Threat:", text: "No direct threats or coercion detected" },
   ],
   safe: [
     { type: "safe", label: "Legitimate Context:", text: "References a known prior application" },
     { type: "safe", label: "Standard Verification:", text: "Only asks for employment & income info" },
-    { type: "safe", label: "No Financial Demand:", text: "No request for TAC, OTP, or transfers" },
   ],
 };
 
@@ -63,641 +59,19 @@ const ALGO_STEPS = [
 
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
-
-:root {
-  --bg: #0F1117;
-  --surface: #1A1D27;
-  --surface2: #22263A;
-  --border: #2E3248;
-  --accent: #4F8EF7;
-  --accent2: #6C63FF;
-  --success: #22C55E;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-  --text: #E8EAF6;
-  --text-muted: #6B7280;
-  --text-dim: #9CA3AF;
-  --status-bar: #0A0C13;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: #1C1C2E;
-  font-family: 'Nunito', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-.phone-frame {
-  width: 390px; height: 844px;
-  background: var(--bg);
-  border-radius: 50px;
-  border: 2px solid #333;
-  box-shadow: 0 0 0 6px #111, 0 0 0 8px #222, 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  position: relative;
-}
-
-.notch {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 126px; height: 37px; background: #0A0C13;
-  border-radius: 0 0 24px 24px; z-index: 100;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.notch-dot { width: 10px; height: 10px; background: #1a1a1a; border-radius: 50%; border: 1px solid #333; }
-.notch-cam { width: 12px; height: 12px; background: #1a1a1a; border-radius: 50%; border: 2px solid #333; }
-
-.status-bar {
-  background: var(--status-bar); padding: 14px 28px 6px;
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 11px; font-weight: 700; color: var(--text); flex-shrink: 0;
-}
-.status-icons { display: flex; gap: 5px; align-items: center; }
-
-.app-content {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  scrollbar-width: none; background: var(--bg);
-}
-.app-content::-webkit-scrollbar { display: none; }
-
-.screen { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes ripple { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
-@keyframes waveform { 0%,100% { height: 8px; } 50% { height: 28px; } }
-@keyframes alertPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes ocrScan { 0% { top: 0%; } 100% { top: 100%; } }
-@keyframes waveformMini { 0%,100% { height: 6px; } 50% { height: 22px; } }
-
-.home-header { padding: 50px 24px 16px; background: linear-gradient(180deg, #0A0C13 0%, var(--bg) 100%); }
-.home-greeting { font-size: 13px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-.home-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 4px; letter-spacing: -0.5px; }
-.home-title span { color: var(--accent); }
-
-.shield-card {
-  margin: 8px 24px 12px;
-  background: linear-gradient(135deg, #1A1D27 0%, #16192A 100%);
-  border: 1px solid var(--border); border-radius: 24px; padding: 20px;
-  position: relative; overflow: hidden;
-}
-.shield-card::before {
-  content: ''; position: absolute; top: -40px; right: -40px;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(79,142,247,0.15) 0%, transparent 70%);
-  border-radius: 50%;
-}
-.shield-icon {
-  width: 56px; height: 56px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  border-radius: 18px; display: flex; align-items: center; justify-content: center;
-  font-size: 24px; margin-bottom: 10px;
-  box-shadow: 0 8px 24px rgba(79,142,247,0.35);
-}
-.shield-title { font-size: 17px; font-weight: 800; color: var(--text); }
-.shield-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-.shield-badge {
-  position: absolute; top: 18px; right: 18px;
-  background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
-  color: var(--success); font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px;
-}
-
-.scan-btn {
-  margin: 0 24px 12px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  border: none; border-radius: 18px; padding: 16px;
-  color: white; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800;
-  width: calc(100% - 48px); cursor: pointer;
-  box-shadow: 0 8px 24px rgba(79,142,247,0.4);
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: all 0.2s; letter-spacing: 0.3px;
-}
-.scan-btn:active { transform: scale(0.97); }
-
-.stats-row { display: flex; gap: 10px; padding: 0 24px; margin-bottom: 14px; }
-.stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; text-align: center; }
-.stat-num { font-size: 22px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-.stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
-
-.section-title { padding: 0 24px; font-size: 14px; font-weight: 800; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-
-.sentry-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 24px; margin-bottom: 14px; }
-.sentry-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
-  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
-  cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
-}
-.sentry-card:active { transform: scale(0.98); background: var(--surface2); }
-.sentry-card.alert-card { border-color: rgba(239,68,68,0.4); }
-.sentry-card-icon {
-  width: 46px; height: 46px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
-}
-.sentry-card-icon.blue { background: rgba(79,142,247,0.15); }
-.sentry-card-icon.purple { background: rgba(108,99,255,0.15); }
-.sentry-card-icon.red { background: rgba(239,68,68,0.15); }
-.sentry-card-body { flex: 1; min-width: 0; }
-.sentry-card-title { font-size: 14px; font-weight: 800; color: var(--text); }
-.sentry-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.sentry-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px; flex-shrink: 0; letter-spacing: 0.3px; }
-.sentry-pill.active { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
-.sentry-pill.alert { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); animation: alertPulse 1.5s ease infinite; }
-
-.history-list { padding: 0 24px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.history-item {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
-  cursor: pointer; transition: all 0.2s;
-}
-.history-item:active { transform: scale(0.98); background: var(--surface2); }
-.hist-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-.hist-icon.safe { background: rgba(34,197,94,0.15); }
-.hist-icon.warn { background: rgba(245,158,11,0.15); }
-.hist-icon.danger { background: rgba(239,68,68,0.15); }
-.hist-info { flex: 1; min-width: 0; }
-.hist-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hist-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.hist-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 10px; flex-shrink: 0; }
-.hist-badge.safe { background: rgba(34,197,94,0.15); color: var(--success); }
-.hist-badge.warn { background: rgba(245,158,11,0.15); color: var(--warning); }
-.hist-badge.danger { background: rgba(239,68,68,0.15); color: var(--danger); }
-
-.scan-header, .result-header, .call-monitor-header, .contacts-header { padding: 50px 24px 16px; display: flex; align-items: center; gap: 14px; }
-.back-btn {
-  width: 38px; height: 38px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 18px; color: var(--text); transition: all 0.2s; flex-shrink: 0;
-}
-.back-btn:active { transform: scale(0.93); }
-.scan-title { font-size: 20px; font-weight: 900; color: var(--text); }
-
-.input-tabs { display: flex; gap: 8px; padding: 0 24px; margin-bottom: 16px; }
-.input-tab {
-  flex: 1; text-align: center; padding: 9px 14px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; font-size: 13px; font-weight: 700;
-  color: var(--text-muted); cursor: pointer; transition: all 0.2s;
-}
-.input-tab.active { background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.4); color: var(--accent); }
-.input-tab:active { transform: scale(0.97); }
-
-.input-area { margin: 0 24px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 16px; }
-.input-area-label { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-.input-area textarea {
-  width: 100%; background: transparent; border: none; outline: none;
-  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px;
-  line-height: 1.6; resize: none; min-height: 130px;
-}
-.input-area textarea::placeholder { color: var(--text-muted); }
-.char-count { text-align: right; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 6px; }
-
-.quick-fills { padding: 0 24px; margin-bottom: 16px; }
-.quick-fills-label { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
-.quick-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--text-dim);
-  cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif;
-}
-.chip:active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
-
-.analyze-btn {
-  margin: 0 24px 20px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  border: none; border-radius: 18px; padding: 18px;
-  color: white; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800;
-  width: calc(100% - 48px); cursor: pointer;
-  box-shadow: 0 8px 24px rgba(79,142,247,0.4);
-  display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;
-}
-.analyze-btn:active { transform: scale(0.97); }
-.analyze-btn:disabled { opacity: 0.4; pointer-events: none; }
-
-.wav-drop-zone {
-  margin: 0 24px 14px; background: var(--surface); border: 2px dashed var(--border);
-  border-radius: 20px; padding: 28px 20px;
-  display: flex; flex-direction: column; align-items: center; text-align: center;
-  cursor: pointer; transition: all 0.2s; gap: 8px;
-}
-.wav-drop-zone:hover, .wav-drop-zone:active { border-color: var(--accent); background: rgba(79,142,247,0.05); }
-.wav-drop-zone.loaded { border-style: solid; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.04); }
-.wav-drop-icon { font-size: 36px; }
-.wav-drop-title { font-size: 16px; font-weight: 800; color: var(--text); }
-.wav-drop-sub { font-size: 12px; color: var(--text-muted); }
-.wav-format-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.25);
-  border-radius: 8px; padding: 4px 12px; font-size: 11px; font-weight: 700;
-  color: var(--accent); letter-spacing: 0.3px; margin-top: 4px;
-}
-.wav-loaded-card {
-  margin: 0 24px 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
-  border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px;
-}
-.wav-loaded-icon { font-size: 28px; flex-shrink: 0; }
-.wav-loaded-info { flex: 1; min-width: 0; }
-.wav-loaded-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wav-loaded-meta { font-size: 11px; color: var(--success); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
-.wav-loaded-remove { width: 28px; height: 28px; background: rgba(239,68,68,0.12); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--danger); cursor: pointer; flex-shrink: 0; border: none; }
-.wav-waveform-preview {
-  margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;
-}
-.wav-waveform-bars { display: flex; align-items: center; gap: 3px; height: 32px; }
-.wav-bar-mini {
-  width: 3px; background: var(--success); border-radius: 3px;
-  animation: waveformMini 0.6s ease-in-out infinite; opacity: 0.8;
-}
-.wav-bar-mini:nth-child(odd) { animation-delay: 0.1s; }
-.wav-bar-mini:nth-child(3n) { animation-delay: 0.3s; background: var(--accent); }
-.wav-bar-mini:nth-child(5n) { animation-delay: 0.5s; }
-.wav-waveform-label { font-size: 11px; color: var(--success); font-weight: 700; letter-spacing: 0.3px; }
-
-.analyzing-content { padding: 50px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.pulse-ring { position: relative; width: 120px; height: 120px; margin-bottom: 28px; display: flex; align-items: center; justify-content: center; }
-.pulse-ring::before, .pulse-ring::after { content: ''; position: absolute; border: 2px solid var(--accent); border-radius: 50%; animation: ripple 2s ease-out infinite; width: 100%; height: 100%; }
-.pulse-ring::after { animation-delay: 0.8s; }
-.pulse-inner {
-  width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 34px; box-shadow: 0 0 40px rgba(79,142,247,0.5); z-index: 1;
-}
-.analyzing-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
-.analyzing-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.5; }
-.waveform { display: flex; align-items: center; gap: 4px; height: 40px; margin-bottom: 36px; }
-.wave-bar { width: 4px; background: var(--accent); border-radius: 4px; animation: waveform 0.8s ease-in-out infinite; opacity: 0.8; }
-.wave-bar:nth-child(2) { animation-delay: 0.1s; background: var(--accent2); }
-.wave-bar:nth-child(3) { animation-delay: 0.2s; }
-.wave-bar:nth-child(4) { animation-delay: 0.3s; background: var(--accent2); }
-.wave-bar:nth-child(5) { animation-delay: 0.4s; }
-.wave-bar:nth-child(6) { animation-delay: 0.5s; background: var(--accent2); }
-.wave-bar:nth-child(7) { animation-delay: 0.6s; }
-.wave-bar:nth-child(8) { animation-delay: 0.7s; background: var(--accent2); }
-.wave-bar:nth-child(9) { animation-delay: 0.5s; }
-.wave-bar:nth-child(10) { animation-delay: 0.3s; background: var(--accent2); }
-.wave-bar:nth-child(11) { animation-delay: 0.1s; }
-.wave-bar:nth-child(12) { animation-delay: 0.4s; background: var(--accent2); }
-.steps-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-.step-row { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; animation: slideUp 0.4s ease both; }
-.step-row:nth-child(2) { animation-delay: 0.1s; }
-.step-row:nth-child(3) { animation-delay: 0.2s; }
-.step-indicator { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.step-indicator.done { background: rgba(34,197,94,0.15); color: var(--success); }
-.step-indicator.active-step { background: rgba(79,142,247,0.15); border: 2px solid var(--accent); animation: pulse 1s ease infinite; }
-.step-indicator.active-step .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
-.step-indicator.pending { background: var(--surface2); color: var(--text-muted); }
-.step-text { font-size: 13px; font-weight: 700; color: var(--text); }
-.step-sub { font-size: 11px; color: var(--text-muted); }
-
-.result-hero { margin: 0 24px 16px; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; }
-.result-hero.safe { background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 100%); border: 1px solid rgba(34,197,94,0.25); }
-.result-hero.warn { background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.05) 100%); border: 1px solid rgba(245,158,11,0.25); }
-.result-hero.danger { background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%); border: 1px solid rgba(239,68,68,0.3); }
-.result-icon { width: 72px; height: 72px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 14px; }
-.result-icon.safe { background: rgba(34,197,94,0.2); box-shadow: 0 8px 32px rgba(34,197,94,0.3); }
-.result-icon.warn { background: rgba(245,158,11,0.2); box-shadow: 0 8px 32px rgba(245,158,11,0.3); }
-.result-icon.danger { background: rgba(239,68,68,0.2); box-shadow: 0 8px 32px rgba(239,68,68,0.35); }
-.result-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-.result-label.safe { color: var(--success); }
-.result-label.warn { color: var(--warning); }
-.result-label.danger { color: var(--danger); }
-.result-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px; }
-.result-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-
-.confidence-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
-.conf-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
-.conf-bars { display: flex; flex-direction: column; gap: 12px; }
-.conf-row { display: flex; align-items: center; gap: 12px; }
-.conf-name { font-size: 12px; font-weight: 700; color: var(--text-dim); width: 90px; flex-shrink: 0; }
-.conf-bar-wrap { flex: 1; height: 8px; background: var(--surface2); border-radius: 10px; overflow: hidden; }
-.conf-bar-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
-.conf-bar-fill.safe { background: linear-gradient(90deg, var(--success), rgba(34,197,94,0.6)); }
-.conf-bar-fill.warn { background: linear-gradient(90deg, var(--warning), rgba(245,158,11,0.6)); }
-.conf-bar-fill.danger { background: linear-gradient(90deg, var(--danger), rgba(239,68,68,0.6)); }
-.conf-pct { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; width: 38px; text-align: right; flex-shrink: 0; }
-.conf-pct.safe { color: var(--success); }
-.conf-pct.warn { color: var(--warning); }
-.conf-pct.danger { color: var(--danger); }
-
-.flags-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
-.flags-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
-.flag-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.flag-item:last-child { border-bottom: none; padding-bottom: 0; }
-.flag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-.flag-dot.danger { background: var(--danger); }
-.flag-dot.warn { background: var(--warning); }
-.flag-dot.safe { background: var(--success); }
-.flag-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-.flag-text strong { color: var(--text); }
-
-.action-row { padding: 0 24px; display: flex; gap: 10px; margin-bottom: 20px; }
-.action-btn-sec { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-.action-btn-sec:active { transform: scale(0.96); }
-.action-btn-pri { flex: 1.5; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); border: none; border-radius: 16px; padding: 14px; color: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(79,142,247,0.35); transition: all 0.2s; }
-.action-btn-pri:active { transform: scale(0.96); }
-.action-btn-danger { flex: 1.5; background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%); border: none; border-radius: 16px; padding: 14px; color: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(239,68,68,0.35); transition: all 0.2s; }
-.action-btn-danger:active { transform: scale(0.96); }
-
-.call-status-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
-.call-status-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
-.number-compare { background: var(--surface2); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.number-row { display: flex; align-items: center; justify-content: space-between; }
-.number-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
-.number-value { font-size: 14px; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
-.number-value.match { color: var(--success); }
-.number-value.mismatch { color: var(--danger); }
-.number-divider { height: 1px; background: var(--border); }
-.ocr-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.2); border-radius: 8px; padding: 4px 9px; font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 0.3px; }
-
-.detection-status { margin: 0 24px 14px; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-.detection-status.ok { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
-.detection-status.alert { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); }
-.detection-status-icon { font-size: 24px; flex-shrink: 0; }
-.detection-status-text { font-size: 13px; font-weight: 700; color: var(--text); }
-.detection-status-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-.ocr-preview { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
-.ocr-preview-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-.ocr-screen-mock { background: #0a0c13; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #1a1d27; position: relative; overflow: hidden; }
-.ocr-scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: ocrScan 2s ease-in-out infinite; opacity: 0.8; }
-.ocr-call-icon { font-size: 28px; margin-bottom: 8px; }
-.ocr-displayed-num { font-size: 22px; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
-.ocr-contact-name { font-size: 14px; color: var(--text-muted); }
-
-.sim-btn {
-  margin: 0 24px 10px; border: none; border-radius: 14px; padding: 13px 16px;
-  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
-  width: calc(100% - 48px); cursor: pointer; transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.sim-btn.call-redirect { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
-.sim-btn.call-overlay { background: rgba(108,99,255,0.15); color: #a78bfa; border: 1px solid rgba(108,99,255,0.3); }
-.sim-btn.call-safe { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
-.sim-btn:active { transform: scale(0.97); }
-
-.algo-card { margin: 0 24px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; }
-.algo-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
-.algo-step { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
-.algo-step:last-child { border-bottom: none; }
-.algo-step-num { width: 22px; height: 22px; background: rgba(79,142,247,0.15); color: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
-.algo-step-text { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-.algo-step-text strong { color: var(--text); }
-
-.contact-item { background: var(--surface); margin: 0 24px 10px; border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; position: relative; overflow: hidden; }
-.contact-item.suspicious { border-color: rgba(239,68,68,0.35); }
-.contact-item.whitelist { border-color: rgba(34,197,94,0.25); opacity: 0.7; }
-.contact-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.contact-avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.contact-avatar.suspicious { background: rgba(239,68,68,0.15); }
-.contact-avatar.whitelist { background: rgba(34,197,94,0.15); }
-.contact-name { font-size: 15px; font-weight: 800; color: var(--text); }
-.contact-tag { margin-left: auto; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 8px; flex-shrink: 0; }
-.contact-tag.dup { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-.contact-tag.ok { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
-.contact-numbers { display: flex; flex-direction: column; gap: 6px; }
-.contact-num-row { display: flex; align-items: center; gap: 8px; }
-.contact-num-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
-.contact-num-badge.original { background: rgba(34,197,94,0.12); color: var(--success); }
-.contact-num-badge.attacker { background: rgba(239,68,68,0.12); color: var(--danger); }
-.contact-num-badge.history { background: rgba(79,142,247,0.12); color: var(--accent); }
-.contact-num-value { font-size: 13px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
-.whitelist-note { font-size: 11px; color: var(--success); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
-.delete-row { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.del-btn { flex: 1; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 9px; color: var(--danger); font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-.del-btn:active { transform: scale(0.97); background: rgba(239,68,68,0.2); }
-.keep-btn { flex: 1; background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.2); border-radius: 10px; padding: 9px; color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-.keep-btn:active { transform: scale(0.97); }
-
-.hist-screen-header { padding: 50px 24px 16px; }
-.hist-screen-title { font-size: 26px; font-weight: 900; color: var(--text); }
-.hist-screen-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
-.hist-filter-row { display: flex; gap: 8px; padding: 0 24px; margin-bottom: 14px; flex-wrap: wrap; }
-.hist-filter { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
-.hist-filter.active { background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.4); color: var(--accent); }
-.hist-filter:active { transform: scale(0.95); }
-.hist-type-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; display: inline-block; margin-top: 3px; }
-.hist-type-badge.call-redirect { background: rgba(79,142,247,0.15); color: var(--accent); }
-.hist-type-badge.display-overlay { background: rgba(108,99,255,0.15); color: #a78bfa; }
-.hist-type-badge.dup-contact { background: rgba(245,158,11,0.15); color: var(--warning); }
-.hist-type-badge.vishing { background: rgba(239,68,68,0.15); color: var(--danger); }
-.hist-type-badge.safe { background: rgba(34,197,94,0.15); color: var(--success); }
-
-.settings-header { padding: 50px 24px 16px; }
-.settings-title { font-size: 26px; font-weight: 900; color: var(--text); }
-.settings-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
-.settings-section { margin: 0 24px 14px; }
-.settings-section-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-.setting-item { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
-.setting-item:active { background: var(--surface2); }
-.setting-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.setting-icon.blue { background: rgba(79,142,247,0.15); }
-.setting-icon.green { background: rgba(34,197,94,0.15); }
-.setting-icon.orange { background: rgba(245,158,11,0.15); }
-.setting-icon.purple { background: rgba(108,99,255,0.15); }
-.setting-icon.red { background: rgba(239,68,68,0.15); }
-.setting-body { flex: 1; }
-.setting-name { font-size: 14px; font-weight: 700; color: var(--text); }
-.setting-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.setting-toggle { width: 44px; height: 26px; border-radius: 13px; position: relative; cursor: pointer; flex-shrink: 0; transition: all 0.3s; }
-.setting-toggle.on { background: var(--success); }
-.setting-toggle.off { background: var(--surface2); border: 1px solid var(--border); }
-.toggle-knob { position: absolute; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); transition: all 0.3s; }
-.setting-toggle.on .toggle-knob { left: 21px; }
-.setting-toggle.off .toggle-knob { left: 3px; }
-.perm-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.perm-item:last-child { border-bottom: none; }
-.perm-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.perm-status.granted { background: var(--success); }
-.perm-status.denied { background: var(--danger); }
-.perm-name { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'JetBrains Mono', monospace; }
-.perm-desc { font-size: 11px; color: var(--text-muted); flex: 1; text-align: right; }
-
-.alert-overlay {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.75); z-index: 200;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  animation: fadeIn 0.3s ease;
-}
-.signaller-panel { background: var(--surface); border-radius: 28px 28px 0 0; border-top: 3px solid var(--danger); padding: 24px; animation: slideUp 0.4s ease; }
-.signaller-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-.signaller-icon { width: 56px; height: 56px; background: rgba(239,68,68,0.15); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; animation: alertPulse 1.5s ease infinite; }
-.signaller-title { font-size: 18px; font-weight: 900; color: var(--danger); }
-.signaller-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
-.signaller-module-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--danger); margin-bottom: 16px; }
-.signaller-details { background: var(--surface2); border-radius: 14px; padding: 14px; margin-bottom: 20px; }
-.signaller-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
-.signaller-detail-row:last-child { border-bottom: none; }
-.signaller-detail-key { font-size: 11px; color: var(--text-muted); font-weight: 600; }
-.signaller-detail-val { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-.signaller-detail-val.mismatch { color: var(--danger); }
-.signaller-detail-val.original { color: var(--success); }
-.signaller-detail-val.ocr { color: var(--accent); }
-.signaller-btn-row { display: flex; gap: 10px; }
-
-.bottom-nav { background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px; z-index: 50; flex-shrink: 0; position: relative; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; transition: all 0.2s; background: none; border: none; }
-.nav-item:active { transform: scale(0.9); }
-.nav-icon { font-size: 22px; }
-.nav-label { font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
-.nav-item.active .nav-label { color: var(--accent); }
-.nav-item:not(.active) .nav-label { color: var(--text-muted); }
-.nav-pip { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-top: -2px; }
-
-.info-banner { margin: 0 24px 12px; background: rgba(79,142,247,0.07); border: 1px solid rgba(79,142,247,0.2); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
-.info-banner-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-.info-banner-text { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-.info-banner-text strong { color: var(--text); }
+:root{--bg:#0F1117;--surface:#1A1D27;--surface2:#22263A;--border:#2E3248;--accent:#4F8EF7;--accent2:#6C63FF;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--text:#E8EAF6;--text-muted:#6B7280;--text-dim:#9CA3AF;--status-bar:#0A0C13}*{margin:0;padding:0;box-sizing:border-box}body{background:#1C1C2E;font-family:'Nunito',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden}.phone-frame{width:390px;height:844px;background:var(--bg);border-radius:50px;border:2px solid #333;box-shadow:0 0 0 6px #111,0 0 0 8px #222,0 40px 80px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.05);overflow:hidden;display:flex;flex-direction:column;position:relative}.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:126px;height:37px;background:#0A0C13;border-radius:0 0 24px 24px;z-index:100;display:flex;align-items:center;justify-content:center;gap:8px}.notch-dot{width:10px;height:10px;background:#1a1a1a;border-radius:50%;border:1px solid #333}.notch-cam{width:12px;height:12px;background:#1a1a1a;border-radius:50%;border:2px solid #333}.status-bar{background:var(--status-bar);padding:14px 28px 6px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--text);flex-shrink:0}.status-icons{display:flex;gap:5px;align-items:center}.app-content{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;background:var(--bg)}.app-content::-webkit-scrollbar{display:none}.screen{animation:fadeIn 0.3s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}@keyframes ripple{0%{transform:scale(0.8);opacity:1}100%{transform:scale(2.4);opacity:0}}@keyframes waveform{0%,100%{height:8px}50%{height:28px}}@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes ocrScan{0%{top:0%}100%{top:100%}}@keyframes waveformMini{0%,100%{height:6px}50%{height:22px}}.home-header{padding:50px 24px 16px;background:linear-gradient(180deg,#0A0C13 0%,var(--bg) 100%)}.home-greeting{font-size:13px;color:var(--text-muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}.home-title{font-size:26px;font-weight:900;color:var(--text);margin-top:4px;letter-spacing:-0.5px}.home-title span{color:var(--accent)}.shield-card{margin:8px 24px 12px;background:linear-gradient(135deg,#1A1D27 0%,#16192A 100%);border:1px solid var(--border);border-radius:24px;padding:20px;position:relative;overflow:hidden}.shield-card::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(79,142,247,0.15) 0%,transparent 70%);border-radius:50%}.shield-icon{width:56px;height:56px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px;box-shadow:0 8px 24px rgba(79,142,247,0.35)}.shield-title{font-size:17px;font-weight:800;color:var(--text)}.shield-sub{font-size:12px;color:var(--text-muted);margin-top:3px}.shield-badge{position:absolute;top:18px;right:18px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:var(--success);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:0.5px}.scan-btn{margin:0 24px 12px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border:none;border-radius:18px;padding:16px;color:white;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;width:calc(100% - 48px);cursor:pointer;box-shadow:0 8px 24px rgba(79,142,247,0.4);display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;letter-spacing:0.3px}.scan-btn:active{transform:scale(0.97)}.stats-row{display:flex;gap:10px;padding:0 24px;margin-bottom:14px}.stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;text-align:center}.stat-num{font-size:22px;font-weight:900;font-family:'JetBrains Mono',monospace}.stat-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-top:2px}.section-title{padding:0 24px;font-size:14px;font-weight:800;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}.sentry-grid{display:flex;flex-direction:column;gap:10px;padding:0 24px;margin-bottom:14px}.sentry-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}.sentry-card:active{transform:scale(0.98);background:var(--surface2)}.sentry-card.alert-card{border-color:rgba(239,68,68,0.4)}.sentry-card-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}.sentry-card-icon.blue{background:rgba(79,142,247,0.15)}.sentry-card-icon.purple{background:rgba(108,99,255,0.15)}.sentry-card-icon.red{background:rgba(239,68,68,0.15)}.sentry-card-body{flex:1;min-width:0}.sentry-card-title{font-size:14px;font-weight:800;color:var(--text)}.sentry-card-sub{font-size:11px;color:var(--text-muted);margin-top:2px}.sentry-pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;flex-shrink:0;letter-spacing:0.3px}.sentry-pill.active{background:rgba(34,197,94,0.15);color:var(--success);border:1px solid rgba(34,197,94,0.25)}.sentry-pill.alert{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3);animation:alertPulse 1.5s ease infinite}.history-list{padding:0 24px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px}.history-item{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s}.history-item:active{transform:scale(0.98);background:var(--surface2)}.hist-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}.hist-icon.safe{background:rgba(34,197,94,0.15)}.hist-icon.warn{background:rgba(245,158,11,0.15)}.hist-icon.danger{background:rgba(239,68,68,0.15)}.hist-info{flex:1;min-width:0}.hist-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hist-time{font-size:11px;color:var(--text-muted);margin-top:2px}.hist-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;flex-shrink:0}.hist-badge.safe{background:rgba(34,197,94,0.15);color:var(--success)}.hist-badge.warn{background:rgba(245,158,11,0.15);color:var(--warning)}.hist-badge.danger{background:rgba(239,68,68,0.15);color:var(--danger)}.scan-header,.result-header,.call-monitor-header,.contacts-header{padding:50px 24px 16px;display:flex;align-items:center;gap:14px}.back-btn{width:38px;height:38px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text);transition:all 0.2s;flex-shrink:0}.back-btn:active{transform:scale(0.93)}.scan-title{font-size:20px;font-weight:900;color:var(--text)}.input-tabs{display:flex;gap:8px;padding:0 24px;margin-bottom:16px}.input-tab{flex:1;text-align:center;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:all 0.2s}.input-tab.active{background:rgba(79,142,247,0.15);border-color:rgba(79,142,247,0.4);color:var(--accent)}.input-tab:active{transform:scale(0.97)}.input-area{margin:0 24px 16px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px}.input-area-label{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}.input-area textarea{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;line-height:1.6;resize:none;min-height:130px}.input-area textarea::placeholder{color:var(--text-muted)}.char-count{text-align:right;font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-top:6px}.quick-fills{padding:0 24px;margin-bottom:16px}.quick-fills-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px}.quick-chips{display:flex;gap:8px;flex-wrap:wrap}.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--text-dim);cursor:pointer;transition:all 0.2s;font-family:'Nunito',sans-serif}.chip:active{background:var(--surface2);border-color:var(--accent);color:var(--accent)}.analyze-btn{margin:0 24px 20px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border:none;border-radius:18px;padding:18px;color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;width:calc(100% - 48px);cursor:pointer;box-shadow:0 8px 24px rgba(79,142,247,0.4);display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s}.analyze-btn:active{transform:scale(0.97)}.analyze-btn:disabled{opacity:0.4;pointer-events:none}.wav-drop-zone{margin:0 24px 14px;background:var(--surface);border:2px dashed var(--border);border-radius:20px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;transition:all 0.2s;gap:8px}.wav-drop-zone:hover,.wav-drop-zone:active{border-color:var(--accent);background:rgba(79,142,247,0.05)}.wav-drop-zone.loaded{border-style:solid;border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.04)}.wav-drop-icon{font-size:36px}.wav-drop-title{font-size:16px;font-weight:800;color:var(--text)}.wav-drop-sub{font-size:12px;color:var(--text-muted)}.wav-format-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.25);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.3px;margin-top:4px}.wav-loaded-card{margin:0 24px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px}.wav-loaded-icon{font-size:28px;flex-shrink:0}.wav-loaded-info{flex:1;min-width:0}.wav-loaded-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wav-loaded-meta{font-size:11px;color:var(--success);margin-top:2px;font-family:'JetBrains Mono',monospace}.wav-loaded-remove{width:28px;height:28px;background:rgba(239,68,68,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--danger);cursor:pointer;flex-shrink:0;border:none}.wav-waveform-preview{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}.wav-waveform-bars{display:flex;align-items:center;gap:3px;height:32px}.wav-bar-mini{width:3px;background:var(--success);border-radius:3px;animation:waveformMini 0.6s ease-in-out infinite;opacity:0.8}.wav-bar-mini:nth-child(odd){animation-delay:0.1s}.wav-bar-mini:nth-child(3n){animation-delay:0.3s;background:var(--accent)}.wav-bar-mini:nth-child(5n){animation-delay:0.5s}.wav-waveform-label{font-size:11px;color:var(--success);font-weight:700;letter-spacing:0.3px}.analyzing-content{padding:50px 24px;display:flex;flex-direction:column;align-items:center;text-align:center}.pulse-ring{position:relative;width:120px;height:120px;margin-bottom:28px;display:flex;align-items:center;justify-content:center}.pulse-ring::before,.pulse-ring::after{content:'';position:absolute;border:2px solid var(--accent);border-radius:50%;animation:ripple 2s ease-out infinite;width:100%;height:100%}.pulse-ring::after{animation-delay:0.8s}.pulse-inner{width:80px;height:80px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 0 40px rgba(79,142,247,0.5);z-index:1}.analyzing-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:8px}.analyzing-sub{font-size:13px;color:var(--text-muted);margin-bottom:36px;line-height:1.5}.waveform{display:flex;align-items:center;gap:4px;height:40px;margin-bottom:36px}.wave-bar{width:4px;background:var(--accent);border-radius:4px;animation:waveform 0.8s ease-in-out infinite;opacity:0.8}.wave-bar:nth-child(2){animation-delay:0.1s;background:var(--accent2)}.wave-bar:nth-child(3){animation-delay:0.2s}.wave-bar:nth-child(4){animation-delay:0.3s;background:var(--accent2)}.wave-bar:nth-child(5){animation-delay:0.4s}.wave-bar:nth-child(6){animation-delay:0.5s;background:var(--accent2)}.wave-bar:nth-child(7){animation-delay:0.6s}.wave-bar:nth-child(8){animation-delay:0.7s;background:var(--accent2)}.wave-bar:nth-child(9){animation-delay:0.5s}.wave-bar:nth-child(10){animation-delay:0.3s;background:var(--accent2)}.wave-bar:nth-child(11){animation-delay:0.1s}.wave-bar:nth-child(12){animation-delay:0.4s;background:var(--accent2)}.steps-list{width:100%;display:flex;flex-direction:column;gap:10px}.step-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;animation:slideUp 0.4s ease both}.step-row:nth-child(2){animation-delay:0.1s}.step-row:nth-child(3){animation-delay:0.2s}.step-indicator{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}.step-indicator.done{background:rgba(34,197,94,0.15);color:var(--success)}.step-indicator.active-step{background:rgba(79,142,247,0.15);border:2px solid var(--accent);animation:pulse 1s ease infinite}.step-indicator.active-step .dot{width:8px;height:8px;background:var(--accent);border-radius:50%}.step-indicator.pending{background:var(--surface2);color:var(--text-muted)}.step-text{font-size:13px;font-weight:700;color:var(--text)}.step-sub{font-size:11px;color:var(--text-muted)}.result-hero{margin:0 24px 16px;border-radius:24px;padding:24px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden}.result-hero.safe{background:linear-gradient(135deg,rgba(34,197,94,0.12) 0%,rgba(34,197,94,0.05) 100%);border:1px solid rgba(34,197,94,0.25)}.result-hero.warn{background:linear-gradient(135deg,rgba(245,158,11,0.12) 0%,rgba(245,158,11,0.05) 100%);border:1px solid rgba(245,158,11,0.25)}.result-hero.danger{background:linear-gradient(135deg,rgba(239,68,68,0.15) 0%,rgba(239,68,68,0.05) 100%);border:1px solid rgba(239,68,68,0.3)}.result-icon{width:72px;height:72px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:14px}.result-icon.safe{background:rgba(34,197,94,0.2);box-shadow:0 8px 32px rgba(34,197,94,0.3)}.result-icon.warn{background:rgba(245,158,11,0.2);box-shadow:0 8px 32px rgba(245,158,11,0.3)}.result-icon.danger{background:rgba(239,68,68,0.2);box-shadow:0 8px 32px rgba(239,68,68,0.35)}.result-label{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}.result-label.safe{color:var(--success)}.result-label.warn{color:var(--warning)}.result-label.danger{color:var(--danger)}.result-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:5px}.result-desc{font-size:13px;color:var(--text-muted);line-height:1.6}.confidence-card{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px}.conf-label{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}.conf-bars{display:flex;flex-direction:column;gap:12px}.conf-row{display:flex;align-items:center;gap:12px}.conf-name{font-size:12px;font-weight:700;color:var(--text-dim);width:90px;flex-shrink:0}.conf-bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:10px;overflow:hidden}.conf-bar-fill{height:100%;border-radius:10px;transition:width 1s ease}.conf-bar-fill.safe{background:linear-gradient(90deg,var(--success),rgba(34,197,94,0.6))}.conf-bar-fill.warn{background:linear-gradient(90deg,var(--warning),rgba(245,158,11,0.6))}.conf-bar-fill.danger{background:linear-gradient(90deg,var(--danger),rgba(239,68,68,0.6))}.conf-pct{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;width:38px;text-align:right;flex-shrink:0}.conf-pct.safe{color:var(--success)}.conf-pct.warn{color:var(--warning)}.conf-pct.danger{color:var(--danger)}.flags-card{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px}.flags-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}.flag-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}.flag-item:last-child{border-bottom:none;padding-bottom:0}.flag-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}.flag-dot.danger{background:var(--danger)}.flag-dot.warn{background:var(--warning)}.flag-dot.safe{background:var(--success)}.flag-text{font-size:13px;color:var(--text-dim);line-height:1.5}.flag-text strong{color:var(--text)}.action-row{padding:0 24px;display:flex;gap:10px;margin-bottom:20px}.action-btn-sec{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s}.action-btn-sec:active{transform:scale(0.96)}.action-btn-pri{flex:1.5;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border:none;border-radius:16px;padding:14px;color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(79,142,247,0.35);transition:all 0.2s}.action-btn-pri:active{transform:scale(0.96)}.action-btn-danger{flex:1.5;background:linear-gradient(135deg,var(--danger) 0%,#c0392b 100%);border:none;border-radius:16px;padding:14px;color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(239,68,68,0.35);transition:all 0.2s}.action-btn-danger:active{transform:scale(0.96)}.call-status-card{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px}.call-status-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}.number-compare{background:var(--surface2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;margin-bottom:14px}.number-row{display:flex;align-items:center;justify-content:space-between}.number-label{font-size:11px;color:var(--text-muted);font-weight:600}.number-value{font-size:14px;font-weight:800;color:var(--text);font-family:'JetBrains Mono',monospace}.number-value.match{color:var(--success)}.number-value.mismatch{color:var(--danger)}.number-divider{height:1px;background:var(--border)}.ocr-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.2);border-radius:8px;padding:4px 9px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.3px}.detection-status{margin:0 24px 14px;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px}.detection-status.ok{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)}.detection-status.alert{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25)}.detection-status-icon{font-size:24px;flex-shrink:0}.detection-status-text{font-size:13px;font-weight:700;color:var(--text)}.detection-status-sub{font-size:11px;color:var(--text-muted);margin-top:2px}.ocr-preview{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px}.ocr-preview-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}.ocr-screen-mock{background:#0a0c13;border-radius:12px;padding:16px;text-align:center;border:1px solid #1a1d27;position:relative;overflow:hidden}.ocr-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:ocrScan 2s ease-in-out infinite;opacity:0.8}.ocr-call-icon{font-size:28px;margin-bottom:8px}.ocr-displayed-num{font-size:22px;font-weight:800;color:var(--text);font-family:'JetBrains Mono',monospace;margin-bottom:4px}.ocr-contact-name{font-size:14px;color:var(--text-muted)}.sim-btn{margin:0 24px 10px;border:none;border-radius:14px;padding:13px 16px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;width:calc(100% - 48px);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}.sim-btn.call-redirect{background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3)}.sim-btn.call-overlay{background:rgba(108,99,255,0.15);color:#a78bfa;border:1px solid rgba(108,99,255,0.3)}.sim-btn.call-safe{background:rgba(34,197,94,0.15);color:var(--success);border:1px solid rgba(34,197,94,0.3)}.sim-btn:active{transform:scale(0.97)}.algo-card{margin:0 24px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px}.algo-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}.algo-step{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}.algo-step:last-child{border-bottom:none}.algo-step-num{width:22px;height:22px;background:rgba(79,142,247,0.15);color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}.algo-step-text{font-size:12px;color:var(--text-dim);line-height:1.5}.algo-step-text strong{color:var(--text)}.contact-item{background:var(--surface);margin:0 24px 10px;border:1px solid var(--border);border-radius:16px;padding:14px 16px;position:relative;overflow:hidden}.contact-item.suspicious{border-color:rgba(239,68,68,0.35)}.contact-item.whitelist{border-color:rgba(34,197,94,0.25);opacity:0.7}.contact-header-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}.contact-avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.contact-avatar.suspicious{background:rgba(239,68,68,0.15)}.contact-avatar.whitelist{background:rgba(34,197,94,0.15)}.contact-name{font-size:15px;font-weight:800;color:var(--text)}.contact-tag{margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;flex-shrink:0}.contact-tag.dup{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}.contact-tag.ok{background:rgba(34,197,94,0.15);color:var(--success);border:1px solid rgba(34,197,94,0.25)}.contact-numbers{display:flex;flex-direction:column;gap:6px}.contact-num-row{display:flex;align-items:center;gap:8px}.contact-num-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0}.contact-num-badge.original{background:rgba(34,197,94,0.12);color:var(--success)}.contact-num-badge.attacker{background:rgba(239,68,68,0.12);color:var(--danger)}.contact-num-badge.history{background:rgba(79,142,247,0.12);color:var(--accent)}.contact-num-value{font-size:13px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}.whitelist-note{font-size:11px;color:var(--success);margin-top:6px;display:flex;align-items:center;gap:5px}.delete-row{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}.del-btn{flex:1;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:9px;color:var(--danger);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}.del-btn:active{transform:scale(0.97);background:rgba(239,68,68,0.2)}.keep-btn{flex:1;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:10px;padding:9px;color:var(--accent);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}.keep-btn:active{transform:scale(0.97)}.hist-screen-header{padding:50px 24px 16px}.hist-screen-title{font-size:26px;font-weight:900;color:var(--text)}.hist-screen-sub{font-size:13px;color:var(--text-muted);margin-top:3px}.hist-filter-row{display:flex;gap:8px;padding:0 24px;margin-bottom:14px;flex-wrap:wrap}.hist-filter{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:all 0.2s;font-family:'Nunito',sans-serif}.hist-filter.active{background:rgba(79,142,247,0.15);border-color:rgba(79,142,247,0.4);color:var(--accent)}.hist-filter:active{transform:scale(0.95)}.hist-type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;display:inline-block;margin-top:3px}.hist-type-badge.call-redirect{background:rgba(79,142,247,0.15);color:var(--accent)}.hist-type-badge.display-overlay{background:rgba(108,99,255,0.15);color:#a78bfa}.hist-type-badge.dup-contact{background:rgba(245,158,11,0.15);color:var(--warning)}.hist-type-badge.vishing{background:rgba(239,68,68,0.15);color:var(--danger)}.hist-type-badge.safe{background:rgba(34,197,94,0.15);color:var(--success)}.settings-header{padding:50px 24px 16px}.settings-title{font-size:26px;font-weight:900;color:var(--text)}.settings-sub{font-size:13px;color:var(--text-muted);margin-top:3px}.settings-section{margin:0 24px 14px}.settings-section-label{font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.setting-item{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:all 0.2s}.setting-item:active{background:var(--surface2)}.setting-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.setting-icon.blue{background:rgba(79,142,247,0.15)}.setting-icon.green{background:rgba(34,197,94,0.15)}.setting-icon.orange{background:rgba(245,158,11,0.15)}.setting-icon.purple{background:rgba(108,99,255,0.15)}.setting-icon.red{background:rgba(239,68,68,0.15)}.setting-body{flex:1}.setting-name{font-size:14px;font-weight:700;color:var(--text)}.setting-desc{font-size:11px;color:var(--text-muted);margin-top:2px}.setting-toggle{width:44px;height:26px;border-radius:13px;position:relative;cursor:pointer;flex-shrink:0;transition:all 0.3s}.setting-toggle.on{background:var(--success)}.setting-toggle.off{background:var(--surface2);border:1px solid var(--border)}.toggle-knob{position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.3);transition:all 0.3s}.setting-toggle.on .toggle-knob{left:21px}.setting-toggle.off .toggle-knob{left:3px}.perm-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}.perm-item:last-child{border-bottom:none}.perm-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}.perm-status.granted{background:var(--success)}.perm-status.denied{background:var(--danger)}.perm-name{font-size:12px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace}.perm-desc{font-size:11px;color:var(--text-muted);flex:1;text-align:right}.alert-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;flex-direction:column;justify-content:flex-end;animation:fadeIn 0.3s ease}.signaller-panel{background:var(--surface);border-radius:28px 28px 0 0;border-top:3px solid var(--danger);padding:24px;animation:slideUp 0.4s ease}.signaller-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}.signaller-icon{width:56px;height:56px;background:rgba(239,68,68,0.15);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;animation:alertPulse 1.5s ease infinite}.signaller-title{font-size:18px;font-weight:900;color:var(--danger)}.signaller-sub{font-size:13px;color:var(--text-muted);margin-top:3px}.signaller-module-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--danger);margin-bottom:16px}.signaller-details{background:var(--surface2);border-radius:14px;padding:14px;margin-bottom:20px}.signaller-detail-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}.signaller-detail-row:last-child{border-bottom:none}.signaller-detail-key{font-size:11px;color:var(--text-muted);font-weight:600}.signaller-detail-val{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace}.signaller-detail-val.mismatch{color:var(--danger)}.signaller-detail-val.original{color:var(--success)}.signaller-detail-val.ocr{color:var(--accent)}.signaller-btn-row{display:flex;gap:10px}.bottom-nav{background:var(--surface);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:50;flex-shrink:0;position:relative}.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;transition:all 0.2s;background:none;border:none}.nav-item:active{transform:scale(0.9)}.nav-icon{font-size:22px}.nav-label{font-size:10px;font-weight:700;letter-spacing:0.3px}.nav-item.active .nav-label{color:var(--accent)}.nav-item:not(.active) .nav-label{color:var(--text-muted)}.nav-pip{width:4px;height:4px;background:var(--accent);border-radius:50%;margin-top:-2px}.info-banner{margin:0 24px 12px;background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.2);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}.info-banner-icon{font-size:16px;flex-shrink:0;margin-top:1px}.info-banner-text{font-size:12px;color:var(--text-dim);line-height:1.5}.info-banner-text strong{color:var(--text)}
 `;
 
-const StatusBar = () => (
-  <div className="status-bar">
-    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>9:41</span>
-    <div className="status-icons">
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="7" rx="1" /><rect x="9" y="2" width="3" height="10" rx="1" /><rect x="13.5" y="0" width="3" height="12" rx="1" opacity="0.3" /></svg>
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2C10.5 2 12.7 3.1 14.2 4.8L15.5 3.5C13.6 1.4 11 0 8 0C5 0 2.4 1.4 0.5 3.5L1.8 4.8C3.3 3.1 5.5 2 8 2Z" /><path d="M8 5C9.7 5 11.2 5.7 12.3 6.8L13.6 5.5C12.1 4 10.1 3 8 3C5.9 3 3.9 4 2.4 5.5L3.7 6.8C4.8 5.7 6.3 5 8 5Z" /><circle cx="8" cy="10" r="2" /></svg>
-      <span style={{ fontSize: 12 }}>🔋</span>
-    </div>
-  </div>
-);
+const StatusBar = () => (<div className="status-bar"><span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>9:41</span><div className="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="7" rx="1" /><rect x="9" y="2" width="3" height="10" rx="1" /><rect x="13.5" y="0" width="3" height="12" rx="1" opacity="0.3" /></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2C10.5 2 12.7 3.1 14.2 4.8L15.5 3.5C13.6 1.4 11 0 8 0C5 0 2.4 1.4 0.5 3.5L1.8 4.8C3.3 3.1 5.5 2 8 2Z" /><path d="M8 5C9.7 5 11.2 5.7 12.3 6.8L13.6 5.5C12.1 4 10.1 3 8 3C5.9 3 3.9 4 2.4 5.5L3.7 6.8C4.8 5.7 6.3 5 8 5Z" /><circle cx="8" cy="10" r="2" /></svg><span style={{ fontSize: 12 }}>🔋</span></div></div>);
+const BackButton = ({ onClick }) => (<div className="back-btn" onClick={onClick}>←</div>);
+const InfoBanner = ({ text, icon = "ℹ️" }) => (<div className="info-banner"><div className="info-banner-icon">{icon}</div><div className="info-banner-text" dangerouslySetInnerHTML={{ __html: text }} /></div>);
+const Toggle = ({ on, onClick }) => (<div className={`setting-toggle ${on ? "on" : "off"}`} onClick={onClick}><div className="toggle-knob" /></div>);
 
-const BackButton = ({ onClick }) => (
-  <div className="back-btn" onClick={onClick}>←</div>
-);
+const HomeScreen = ({ onScan, onResult, onCallMonitor, onContacts }) => (<div className="screen"><div className="home-header"><div className="home-greeting">Welcome back</div><div className="home-title">Voice<span>Guard</span> 🛡️</div></div><div className="shield-card"><div className="shield-badge">● ACTIVE</div><div className="shield-icon">🛡️</div><div className="shield-title">VENTINEL Protection Active</div><div className="shield-sub">100% detection · SENTRY + SIGNALLER modules running</div></div><button className="scan-btn" onClick={onScan}>🎙️ Analyse Call</button><div className="stats-row"><div className="stat-card"><div className="stat-num" style={{ color: "var(--success)" }}>24</div><div className="stat-label">Safe</div></div><div className="stat-card"><div className="stat-num" style={{ color: "var(--warning)" }}>6</div><div className="stat-label">Suspicious</div></div><div className="stat-card"><div className="stat-num" style={{ color: "var(--danger)" }}>3</div><div className="stat-label">Blocked</div></div></div><div className="section-title">SENTRY Modules</div><div className="sentry-grid"><div className="sentry-card" onClick={() => onCallMonitor("redirect")}><div className="sentry-card-icon blue">📞</div><div className="sentry-card-body"><div className="sentry-card-title">Call Redirection Detection</div><div className="sentry-card-sub">Compares dialed vs. actual connected number</div></div><div className="sentry-pill active">ON</div></div><div className="sentry-card" onClick={() => onCallMonitor("overlay")}><div className="sentry-card-icon purple">🖥️</div><div className="sentry-card-body"><div className="sentry-card-title">Display Overlay Detection</div><div className="sentry-card-sub">OCR screen capture vs. real incoming number</div></div><div className="sentry-pill active">ON</div></div><div className="sentry-card alert-card" onClick={onContacts}><div className="sentry-card-icon red">👥</div><div className="sentry-card-body"><div className="sentry-card-title">Duplicated Contacts</div><div className="sentry-card-sub">2 suspicious contacts found · tap to review</div></div><div className="sentry-pill alert">2 ⚠️</div></div></div><div className="section-title">Recent Activity</div><div className="history-list">{RECENT_ACTIVITY.map((item) => (<div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>))}</div></div>);
 
-const InfoBanner = ({ text, icon = "ℹ️" }) => (
-  <div className="info-banner">
-    <div className="info-banner-icon">{icon}</div>
-    <div className="info-banner-text" dangerouslySetInnerHTML={{ __html: text }} />
-  </div>
-);
+const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => { const [tab, setTab] = useState("audio"); const [text, setText] = useState(""); const [wavFile, setWavFile] = useState(null); const fileInputRef = useRef(null); const handleWav = (e) => { const file = e.target.files[0]; if (!file) return; if (!file.name.toLowerCase().endsWith(".wav") && file.type !== "audio/wav") { alert("❌ Invalid file format\n\nOnly .wav audio files are accepted."); e.target.value = ""; return; } setWavFile(file); }; const removeWav = () => { setWavFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }; const fillSample = (key) => setText(SAMPLES[key]); return (<div className="screen"><div className="scan-header"><BackButton onClick={onBack} /><div className="scan-title">Analyze Call</div></div><div className="input-tabs"><div className={`input-tab ${tab === "audio" ? "active" : ""}`} onClick={() => setTab("audio")}>🎵 WAV Audio</div><div className={`input-tab ${tab === "text" ? "active" : ""}`} onClick={() => setTab("text")}>📝 Transcript</div></div>{tab === "audio" ? (<>{!wavFile ? (<div className="wav-drop-zone" onClick={() => fileInputRef.current?.click()}><input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} /><div className="wav-drop-icon">🎵</div><div className="wav-drop-title">Upload WAV Audio</div><div className="wav-drop-sub">Tap to select a .wav file from your device</div><div className="wav-format-badge">WAV only · audio/wav</div></div>) : (<><div className="wav-drop-zone loaded" onClick={() => fileInputRef.current?.click()}><input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} /><div className="wav-drop-icon">✅</div><div className="wav-drop-title" style={{ color: "var(--success)" }}>WAV File Loaded</div><div className="wav-drop-sub">{wavFile.name}</div><div className="wav-format-badge" style={{ background: "rgba(34,197,94,0.12)", borderColor: "rgba(34,197,94,0.3)", color: "var(--success)" }}>{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · audio/wav</div></div><div className="wav-loaded-card"><div className="wav-loaded-icon">🎵</div><div className="wav-loaded-info"><div className="wav-loaded-name">{wavFile.name}</div><div className="wav-loaded-meta">{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · WAV · Ready</div></div><button className="wav-loaded-remove" onClick={removeWav}>✕</button></div><div className="wav-waveform-preview"><div className="wav-waveform-bars">{Array.from({ length: 18 }).map((_, i) => <div key={i} className="wav-bar-mini" />)}</div><div className="wav-waveform-label">Audio ready for analysis</div></div></>)}<InfoBanner text="Only <strong>.wav</strong> format is supported. The audio will be transcribed and analyzed for vishing indicators." /><button className="analyze-btn" disabled={!wavFile} onClick={() => onAnalyzeAudio(wavFile)}>🎵 Transcribe & Analyze</button></>) : (<><div className="input-area"><div className="input-area-label">📝 Call Transcript</div><textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={`Paste or type the call transcript here...\n\nExample: 'Hello, this is Officer Azri from Bukit Aman. Your account has been flagged for suspicious activity. You must transfer RM5,000 immediately or face arrest...'`} /><div className="char-count">{text.length} / 2000</div></div><div className="quick-fills" style={{display:"none"}}><div className="quick-fills-label">Quick fill samples</div><div className="quick-chips"><div className="chip" onClick={() => fillSample("scam")}>🚨 Scam</div><div className="chip" onClick={() => fillSample("suspicious")}>🔍 Suspicious</div><div className="chip" onClick={() => fillSample("safe")}>✅ Safe</div><div className="chip" onClick={() => setText("")}>🗑️ Clear</div></div></div><button className="analyze-btn" onClick={() => onAnalyzeText(text)}>🔍 Analyze Now</button></>)}</div>); };
 
-const Toggle = ({ on, onClick }) => (
-  <div className={`setting-toggle ${on ? "on" : "off"}`} onClick={onClick}>
-    <div className="toggle-knob" />
-  </div>
-);
-
-const HomeScreen = ({ onScan, onResult, onCallMonitor, onContacts }) => (
-  <div className="screen">
-    <div className="home-header">
-      <div className="home-greeting">Welcome back</div>
-      <div className="home-title">Voice<span>Guard</span> 🛡️</div>
-    </div>
-    <div className="shield-card">
-      <div className="shield-badge">● ACTIVE</div>
-      <div className="shield-icon">🛡️</div>
-      <div className="shield-title">VENTINEL Protection Active</div>
-      <div className="shield-sub">100% detection · SENTRY + SIGNALLER modules running</div>
-    </div>
-    <button className="scan-btn" onClick={onScan}>🎙️ Analyse Call</button>
-    <div className="stats-row">
-      <div className="stat-card"><div className="stat-num" style={{ color: "var(--success)" }}>24</div><div className="stat-label">Safe</div></div>
-      <div className="stat-card"><div className="stat-num" style={{ color: "var(--warning)" }}>6</div><div className="stat-label">Suspicious</div></div>
-      <div className="stat-card"><div className="stat-num" style={{ color: "var(--danger)" }}>3</div><div className="stat-label">Blocked</div></div>
-    </div>
-    <div className="section-title">SENTRY Modules</div>
-    <div className="sentry-grid">
-      <div className="sentry-card" onClick={() => onCallMonitor("redirect")}><div className="sentry-card-icon blue">📞</div><div className="sentry-card-body"><div className="sentry-card-title">Call Redirection Detection</div><div className="sentry-card-sub">Compares dialed vs. actual connected number</div></div><div className="sentry-pill active">ON</div></div>
-      <div className="sentry-card" onClick={() => onCallMonitor("overlay")}><div className="sentry-card-icon purple">🖥️</div><div className="sentry-card-body"><div className="sentry-card-title">Display Overlay Detection</div><div className="sentry-card-sub">OCR screen capture vs. real incoming number</div></div><div className="sentry-pill active">ON</div></div>
-      <div className="sentry-card alert-card" onClick={onContacts}><div className="sentry-card-icon red">👥</div><div className="sentry-card-body"><div className="sentry-card-title">Duplicated Contacts</div><div className="sentry-card-sub">2 suspicious contacts found · tap to review</div></div><div className="sentry-pill alert">2 ⚠️</div></div>
-    </div>
-    <div className="section-title">Recent Activity</div>
-    <div className="history-list">
-      {RECENT_ACTIVITY.map((item) => (
-        <div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>
-      ))}
-    </div>
-  </div>
-);
-
-const ScanScreen = ({ onBack, onAnalyzeText, onAnalyzeAudio }) => {
-  const [tab, setTab] = useState("audio");
-  const [text, setText] = useState("");
-  const [wavFile, setWavFile] = useState(null);
-  const fileInputRef = useRef(null);
-
-  const handleWav = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".wav") && file.type !== "audio/wav") {
-      alert("❌ Invalid file format\n\nOnly .wav audio files are accepted.");
-      e.target.value = "";
-      return;
-    }
-    setWavFile(file);
-  };
-
-  const removeWav = () => { setWavFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; };
-  const fillSample = (key) => setText(SAMPLES[key]);
-
-  return (
-    <div className="screen">
-      <div className="scan-header"><BackButton onClick={onBack} /><div className="scan-title">Analyze Call</div></div>
-      <div className="input-tabs">
-        <div className={`input-tab ${tab === "audio" ? "active" : ""}`} onClick={() => setTab("audio")}>🎵 WAV Audio</div>
-        <div className={`input-tab ${tab === "text" ? "active" : ""}`} onClick={() => setTab("text")}>📝 Transcript</div>
-      </div>
-      {tab === "audio" ? (
-        <>
-          {!wavFile ? (
-            <div className="wav-drop-zone" onClick={() => fileInputRef.current?.click()}>
-              <input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} />
-              <div className="wav-drop-icon">🎵</div><div className="wav-drop-title">Upload WAV Audio</div><div className="wav-drop-sub">Tap to select a .wav file from your device</div><div className="wav-format-badge">WAV only · audio/wav</div>
-            </div>
-          ) : (
-            <>
-              <div className="wav-drop-zone loaded" onClick={() => fileInputRef.current?.click()}>
-                <input ref={fileInputRef} type="file" accept=".wav,audio/wav" style={{ display: "none" }} onChange={handleWav} />
-                <div className="wav-drop-icon">✅</div><div className="wav-drop-title" style={{ color: "var(--success)" }}>WAV File Loaded</div><div className="wav-drop-sub">{wavFile.name}</div>
-                <div className="wav-format-badge" style={{ background: "rgba(34,197,94,0.12)", borderColor: "rgba(34,197,94,0.3)", color: "var(--success)" }}>{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · audio/wav</div>
-              </div>
-              <div className="wav-loaded-card"><div className="wav-loaded-icon">🎵</div><div className="wav-loaded-info"><div className="wav-loaded-name">{wavFile.name}</div><div className="wav-loaded-meta">{(wavFile.size / (1024 * 1024)).toFixed(1)} MB · WAV · Ready</div></div><button className="wav-loaded-remove" onClick={removeWav}>✕</button></div>
-              <div className="wav-waveform-preview"><div className="wav-waveform-bars">{Array.from({ length: 18 }).map((_, i) => <div key={i} className="wav-bar-mini" />)}</div><div className="wav-waveform-label">Audio ready for analysis</div></div>
-            </>
-          )}
-          <InfoBanner text="Only <strong>.wav</strong> format is supported. The audio will be transcribed and analyzed for vishing indicators." />
-          <button className="analyze-btn" disabled={!wavFile} onClick={() => onAnalyzeAudio(wavFile)}>🎵 Transcribe & Analyze</button>
-        </>
-      ) : (
-        <>
-          <div className="input-area">
-            <div className="input-area-label">📝 Call Transcript</div>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={`Paste or type the call transcript here...\n\nExample: 'Hello, this is Officer Azri from Bukit Aman. Your account has been flagged for suspicious activity. You must transfer RM5,000 immediately or face arrest...'`} />
-            <div className="char-count">{text.length} / 2000</div>
-          </div>
-          <div className="quick-fills" style={{display:"none"}}>
-            <div className="quick-fills-label">Quick fill samples</div>
-            <div className="quick-chips"><div className="chip" onClick={() => fillSample("scam")}>🚨 Scam</div><div className="chip" onClick={() => fillSample("suspicious")}>🔍 Suspicious</div><div className="chip" onClick={() => fillSample("safe")}>✅ Safe</div><div className="chip" onClick={() => setText("")}>🗑️ Clear</div></div>
-          </div>
-          <button className="analyze-btn" onClick={() => onAnalyzeText(text)}>🔍 Analyze Now</button>
-        </>
-      )}
-    </div>
-  );
-};
-
-const AnalyzingScreen = () => (
-  <div className="screen">
-    <div className="analyzing-content">
-      <div className="pulse-ring"><div className="pulse-inner">🔍</div></div>
-      <div className="analyzing-title">Analyzing Transcript</div>
-      <div className="analyzing-sub">Running AI model to detect<br />vishing patterns...</div>
-      <div className="waveform">{Array.from({ length: 12 }).map((_, i) => <div key={i} className="wave-bar" />)}</div>
-      <div className="steps-list">
-        <div className="step-row"><div className="step-indicator done">✓</div><div><div className="step-text">Text Preprocessing</div><div className="step-sub">Tokenization & cleaning</div></div></div>
-        <div className="step-row"><div className="step-indicator active-step"><div className="dot" /></div><div><div className="step-text">Feature Extraction</div><div className="step-sub">Analyzing linguistic patterns</div></div></div>
-        <div className="step-row"><div className="step-indicator pending">3</div><div><div className="step-text">Model Classification</div><div className="step-sub">Neutral / Suspicious / Scam</div></div></div>
-      </div>
-    </div>
-  </div>
-);
+const AnalyzingScreen = () => (<div className="screen"><div className="analyzing-content"><div className="pulse-ring"><div className="pulse-inner">🔍</div></div><div className="analyzing-title">Analyzing Transcript</div><div className="analyzing-sub">Running AI model to detect<br />vishing patterns...</div><div className="waveform">{Array.from({ length: 12 }).map((_, i) => <div key={i} className="wave-bar" />)}</div><div className="steps-list"><div className="step-row"><div className="step-indicator done">✓</div><div><div className="step-text">Text Preprocessing</div><div className="step-sub">Tokenization & cleaning</div></div></div><div className="step-row"><div className="step-indicator active-step"><div className="dot" /></div><div><div className="step-text">Feature Extraction</div><div className="step-sub">Analyzing linguistic patterns</div></div></div><div className="step-row"><div className="step-indicator pending">3</div><div><div className="step-text">Model Classification</div><div className="step-sub">Neutral / Suspicious / Scam</div></div></div></div></div></div>);
 
 const ResultScreen = ({ onBack, onHome, onScan, result }) => {
   const [animatedScam, setAnimatedScam] = useState(0);
@@ -711,7 +85,7 @@ const ResultScreen = ({ onBack, onHome, onScan, result }) => {
 
   const icons = { safe: "✅", warn: "🔍", danger: "🚨" };
   const labels = { safe: "CALL IS SAFE", warn: "SLIGHTLY SUSPICIOUS", danger: "SCAM DETECTED" };
-  const flags = FLAG_SETS[result.type] || FLAG_SETS.safe;
+  const flags = (result.flags && result.flags.length > 0) ? result.flags : (FLAG_SETS[result.type] || FLAG_SETS.safe);
 
   return (
     <div className="screen">
@@ -732,133 +106,22 @@ const ResultScreen = ({ onBack, onHome, onScan, result }) => {
       </div>
       <div className="flags-card">
         <div className="flags-title">Detected Indicators</div>
-        {flags.map((f, i) => (<div key={i} className="flag-item"><div className={`flag-dot ${f.type}`} /><div className="flag-text"><strong>{f.label}</strong> {f.text}</div></div>))}
+        {flags.map((f, i) => (<div key={i} className="flag-item"><div className={`flag-dot ${f.type}`} /><div className="flag-text"><strong>{f.label}:</strong> {f.text}</div></div>))}
       </div>
       <div className="action-row"><button className="action-btn-sec" onClick={onScan}>↩ Scan Again</button><button className="action-btn-pri" onClick={onHome}>✓ Done</button></div>
     </div>
   );
 };
 
-const CallMonitorScreen = ({ onBack, mode }) => {
-  const [sim, setSim] = useState("safe");
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertData, setAlertData] = useState(null);
-  const isOverlay = mode === "overlay";
+const CallMonitorScreen = ({ onBack, mode }) => { const [sim, setSim] = useState("safe"); const [showAlert, setShowAlert] = useState(false); const [alertData, setAlertData] = useState(null); const isOverlay = mode === "overlay"; const monitorState = { safe: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--text)", connected: "010-1234-1234", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom", ocrIcon: "📞", status: "ok", statusIcon: "✅", statusText: "Numbers Match — No Attack Detected", statusSub: "Call Redirection & Display Overlay: CLEAR" }, redirect: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--success)", connected: "010-9090-0909 ⚠️", connClass: "mismatch", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (Fake Screen)", ocrIcon: "⚠️", status: "alert", statusIcon: "🚨", statusText: "Call Redirection Detected!", statusSub: "Outgoing number was silently changed by vishing app" }, overlay: { dialed: "010-9090-0909", ocr: "010-1234-1234 (Fake)", ocrColor: "var(--danger)", connected: "010-9090-0909", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (FAKE OVERLAY)", ocrIcon: "🖥️", status: "alert", statusIcon: "🚨", statusText: "Display Overlay Attack Detected!", statusSub: "OCR number differs from real incoming number" } }; const s = monitorState[sim]; const triggerSim = (type) => { setSim(type); if (type !== "safe") { setTimeout(() => { setAlertData({ type: type === "redirect" ? "call-redirect" : "display-overlay", dialed: monitorState[type].dialed, ocr: monitorState[type].ocr, actual: monitorState[type].connected, module: type === "redirect" ? "Call Redirection" : "Display Overlay" }); setShowAlert(true); }, 600); } }; return (<div className="screen"><div className="call-monitor-header"><BackButton onClick={onBack} /><div className="scan-title">{isOverlay ? "Display Overlay Monitor" : "Call Redirection Monitor"}</div></div><InfoBanner text={isOverlay ? "SENTRY captures the screen using MediaProjection and runs ML Kit OCR to extract the displayed number, then compares it against the actual API-retrieved number." : "SENTRY compares the number you dialed with the number that actually connects. Any mismatch triggers a SIGNALLER alert instantly."} /><div className="ocr-preview"><div className="ocr-preview-title"><span>Screen Capture (OCR)</span><span className="ocr-badge">📷 ML Kit</span></div><div className="ocr-screen-mock"><div className="ocr-scan-line" /><div className="ocr-call-icon">{s.ocrIcon}</div><div className="ocr-displayed-num">{s.ocrDisplayed}</div><div className="ocr-contact-name">{s.ocrContact}</div></div></div><div className="call-status-card"><div className="call-status-title">{isOverlay ? "OCR vs. Real Number — SENTRY" : "Number Comparison — SENTRY"}</div><div className="number-compare"><div className="number-row"><div className="number-label">{isOverlay ? "Actual Incoming (API)" : "Dialed by User"}</div><div className="number-value">{s.dialed}</div></div><div className="number-divider" /><div className="number-row"><div className="number-label">{isOverlay ? "OCR Extracted (Screen)" : "OCR Extracted (Screen)"}</div><div className="number-value" style={{ color: s.ocrColor }}>{s.ocr}</div></div><div className="number-divider" /><div className="number-row"><div className="number-label">{isOverlay ? "Verdict" : "Actual Connected Number"}</div><div className={`number-value ${s.connClass}`}>{isOverlay && sim === "safe" ? "Match ✓" : s.connected}</div></div></div><div className={`detection-status ${s.status}`} style={{ margin: 0 }}><div className="detection-status-icon">{s.statusIcon}</div><div><div className="detection-status-text">{s.statusText}</div><div className="detection-status-sub">{s.statusSub}</div></div></div></div><div style={{ height: 14 }} /><button className="sim-btn call-redirect" onClick={() => triggerSim("redirect")}>📞 Simulate Call Redirection</button><button className="sim-btn call-overlay" onClick={() => triggerSim("overlay")}>🖥️ Simulate Display Overlay</button><button className="sim-btn call-safe" onClick={() => { setSim("safe"); setShowAlert(false); }}>✅ Simulate Safe Call</button><div style={{ height: 20 }} />{showAlert && alertData && <SignallerAlert data={alertData} onDismiss={() => setShowAlert(false)} onEndCall={() => { setShowAlert(false); setSim("safe"); }} />}</div>); };
 
-  const monitorState = {
-    safe: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--text)", connected: "010-1234-1234", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom", ocrIcon: "📞", status: "ok", statusIcon: "✅", statusText: "Numbers Match — No Attack Detected", statusSub: "Call Redirection & Display Overlay: CLEAR" },
-    redirect: { dialed: "010-1234-1234", ocr: "010-1234-1234", ocrColor: "var(--success)", connected: "010-9090-0909 ⚠️", connClass: "mismatch", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (Fake Screen)", ocrIcon: "⚠️", status: "alert", statusIcon: "🚨", statusText: "Call Redirection Detected!", statusSub: "Outgoing number was silently changed by vishing app" },
-    overlay: { dialed: "010-9090-0909", ocr: "010-1234-1234 (Fake)", ocrColor: "var(--danger)", connected: "010-9090-0909", connClass: "match", ocrDisplayed: "010-1234-1234", ocrContact: "Mom (FAKE OVERLAY)", ocrIcon: "🖥️", status: "alert", statusIcon: "🚨", statusText: "Display Overlay Attack Detected!", statusSub: "OCR number differs from real incoming number" },
-  };
-  const s = monitorState[sim];
+const SignallerAlert = ({ data, onDismiss, onEndCall }) => { const titles = { "call-redirect": "Call Redirection Blocked!", "display-overlay": "Display Overlay Detected!" }; const subs = { "call-redirect": "Your outgoing call was silently hijacked", "display-overlay": "Fake screen is hiding the real caller ID" }; const badges = { "call-redirect": "⚠️ Call Redirection Attack", "display-overlay": "🖥️ Display Overlay Attack" }; return (<div className="alert-overlay"><div className="signaller-panel"><div className="signaller-header"><div className="signaller-icon">🚨</div><div><div className="signaller-title">{titles[data.type]}</div><div className="signaller-sub">{subs[data.type]}</div></div></div><div className="signaller-module-badge">{badges[data.type]}</div><div className="signaller-details"><div className="signaller-detail-row"><div className="signaller-detail-key">Dialed Number</div><div className="signaller-detail-val original">{data.dialed}</div></div><div className="signaller-detail-row"><div className="signaller-detail-key">OCR Screen Extract</div><div className="signaller-detail-val ocr">{data.ocr}</div></div><div className="signaller-detail-row"><div className="signaller-detail-key">Actual Connected</div><div className="signaller-detail-val mismatch">{data.actual}</div></div><div className="signaller-detail-row"><div className="signaller-detail-key">Detection Module</div><div className="signaller-detail-val ocr">{data.module}</div></div></div><div className="signaller-btn-row"><button className="action-btn-sec" onClick={onDismiss}>Dismiss</button><button className="action-btn-danger" onClick={onEndCall}>📵 End Call</button></div></div></div>); };
 
-  const triggerSim = (type) => {
-    setSim(type);
-    if (type !== "safe") {
-      setTimeout(() => { setAlertData({ type: type === "redirect" ? "call-redirect" : "display-overlay", dialed: monitorState[type].dialed, ocr: monitorState[type].ocr, actual: monitorState[type].connected, module: type === "redirect" ? "Call Redirection" : "Display Overlay" }); setShowAlert(true); }, 600);
-    }
-  };
+const ContactsScreen = ({ onBack }) => { const [deleted, setDeleted] = useState({}); const deleteContact = (id, name) => { setDeleted((prev) => ({ ...prev, [id]: true })); setTimeout(() => alert(`✅ Contact deleted: ${name}\n\nSIGNALLER has removed this entry from your contacts.`), 400); }; return (<div className="screen"><div className="contacts-header"><BackButton onClick={onBack} /><div className="scan-title">Duplicated Contacts</div></div><InfoBanner text="SENTRY scans for contacts sharing the same name or with secondary numbers not present in your call/SMS history. These are potential Duplicated Contacts Attacks." /><div className="algo-card"><div className="algo-title">Algorithm — How SENTRY Detects Duplicates</div>{ALGO_STEPS.map((step, i) => (<div key={i} className="algo-step"><div className="algo-step-num">{i + 1}</div><div className="algo-step-text"><strong>{step.text}</strong> — {step.desc}</div></div>))}</div><div className="section-title">⚠️ Suspicious Contacts (2)</div>{!deleted.contact1 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Mom</div><div className="contact-tag dup">DUPLICATE NAME</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Original</div><div className="contact-num-value">010-1234-1234</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">010-9090-0909</div></div><div className="contact-num-row"><div className="contact-num-badge history">In call history</div><div className="contact-num-value">010-1234-1234 ✓</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact1", "Mom (010-9090-0909)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}{!deleted.contact2 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Maybank CS</div><div className="contact-tag dup">UNKNOWN NUMBER</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Known</div><div className="contact-num-value">1300-888-688</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">011-5555-7777</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact2", "Maybank CS (011-5555-7777)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}<div className="section-title" style={{ marginTop: 6 }}>✅ Trusted Contacts</div><div className="contact-item whitelist"><div className="contact-header-row"><div className="contact-avatar whitelist">✅</div><div className="contact-name">Dad</div><div className="contact-tag ok">WHITELISTED</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge history">Call log</div><div className="contact-num-value">010-5678-5678</div></div></div><div className="whitelist-note">✓ Number found in recent call history — trusted</div></div><div style={{ height: 20 }} /></div>); };
 
-  return (
-    <div className="screen">
-      <div className="call-monitor-header"><BackButton onClick={onBack} /><div className="scan-title">{isOverlay ? "Display Overlay Monitor" : "Call Redirection Monitor"}</div></div>
-      <InfoBanner text={isOverlay ? "SENTRY captures the screen using MediaProjection and runs ML Kit OCR to extract the displayed number, then compares it against the actual API-retrieved number." : "SENTRY compares the number you dialed with the number that actually connects. Any mismatch triggers a SIGNALLER alert instantly."} />
-      <div className="ocr-preview"><div className="ocr-preview-title"><span>Screen Capture (OCR)</span><span className="ocr-badge">📷 ML Kit</span></div><div className="ocr-screen-mock"><div className="ocr-scan-line" /><div className="ocr-call-icon">{s.ocrIcon}</div><div className="ocr-displayed-num">{s.ocrDisplayed}</div><div className="ocr-contact-name">{s.ocrContact}</div></div></div>
-      <div className="call-status-card">
-        <div className="call-status-title">{isOverlay ? "OCR vs. Real Number — SENTRY" : "Number Comparison — SENTRY"}</div>
-        <div className="number-compare">
-          <div className="number-row"><div className="number-label">{isOverlay ? "Actual Incoming (API)" : "Dialed by User"}</div><div className="number-value">{s.dialed}</div></div>
-          <div className="number-divider" />
-          <div className="number-row"><div className="number-label">{isOverlay ? "OCR Extracted (Screen)" : "OCR Extracted (Screen)"}</div><div className="number-value" style={{ color: s.ocrColor }}>{s.ocr}</div></div>
-          <div className="number-divider" />
-          <div className="number-row"><div className="number-label">{isOverlay ? "Verdict" : "Actual Connected Number"}</div><div className={`number-value ${s.connClass}`}>{isOverlay && sim === "safe" ? "Match ✓" : s.connected}</div></div>
-        </div>
-        <div className={`detection-status ${s.status}`} style={{ margin: 0 }}><div className="detection-status-icon">{s.statusIcon}</div><div><div className="detection-status-text">{s.statusText}</div><div className="detection-status-sub">{s.statusSub}</div></div></div>
-      </div>
-      <div style={{ height: 14 }} />
-      <button className="sim-btn call-redirect" onClick={() => triggerSim("redirect")}>📞 Simulate Call Redirection</button>
-      <button className="sim-btn call-overlay" onClick={() => triggerSim("overlay")}>🖥️ Simulate Display Overlay</button>
-      <button className="sim-btn call-safe" onClick={() => { setSim("safe"); setShowAlert(false); }}>✅ Simulate Safe Call</button>
-      <div style={{ height: 20 }} />
-      {showAlert && alertData && <SignallerAlert data={alertData} onDismiss={() => setShowAlert(false)} onEndCall={() => { setShowAlert(false); setSim("safe"); }} />}
-    </div>
-  );
-};
+const HistoryScreen = ({ onResult }) => { const [filter, setFilter] = useState("all"); const filtered = HISTORY_ITEMS.filter((item) => filter === "all" || item.type === filter); return (<div className="screen"><div className="hist-screen-header"><div className="hist-screen-title">Detection History</div><div className="hist-screen-sub">All VENTINEL events & scan results</div></div><div className="hist-filter-row">{[["all", "All"], ["attack", "Attacks"], ["scan", "Transcript"], ["safe", "Safe"]].map(([key, label]) => (<div key={key} className={`hist-filter ${filter === key ? "active" : ""}`} onClick={() => setFilter(key)}>{label}</div>))}</div><div className="history-list">{filtered.map((item) => (<div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div><div><span className={`hist-type-badge ${item.typeBadgeClass}`}>{item.typeBadge}</span></div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>))}</div></div>); };
 
-const SignallerAlert = ({ data, onDismiss, onEndCall }) => {
-  const titles = { "call-redirect": "Call Redirection Blocked!", "display-overlay": "Display Overlay Detected!" };
-  const subs = { "call-redirect": "Your outgoing call was silently hijacked", "display-overlay": "Fake screen is hiding the real caller ID" };
-  const badges = { "call-redirect": "⚠️ Call Redirection Attack", "display-overlay": "🖥️ Display Overlay Attack" };
-  return (
-    <div className="alert-overlay">
-      <div className="signaller-panel">
-        <div className="signaller-header"><div className="signaller-icon">🚨</div><div><div className="signaller-title">{titles[data.type]}</div><div className="signaller-sub">{subs[data.type]}</div></div></div>
-        <div className="signaller-module-badge">{badges[data.type]}</div>
-        <div className="signaller-details">
-          <div className="signaller-detail-row"><div className="signaller-detail-key">Dialed Number</div><div className="signaller-detail-val original">{data.dialed}</div></div>
-          <div className="signaller-detail-row"><div className="signaller-detail-key">OCR Screen Extract</div><div className="signaller-detail-val ocr">{data.ocr}</div></div>
-          <div className="signaller-detail-row"><div className="signaller-detail-key">Actual Connected</div><div className="signaller-detail-val mismatch">{data.actual}</div></div>
-          <div className="signaller-detail-row"><div className="signaller-detail-key">Detection Module</div><div className="signaller-detail-val ocr">{data.module}</div></div>
-        </div>
-        <div className="signaller-btn-row"><button className="action-btn-sec" onClick={onDismiss}>Dismiss</button><button className="action-btn-danger" onClick={onEndCall}>📵 End Call</button></div>
-      </div>
-    </div>
-  );
-};
-
-const ContactsScreen = ({ onBack }) => {
-  const [deleted, setDeleted] = useState({});
-  const deleteContact = (id, name) => { setDeleted((prev) => ({ ...prev, [id]: true })); setTimeout(() => alert(`✅ Contact deleted: ${name}\n\nSIGNALLER has removed this entry from your contacts.`), 400); };
-  return (
-    <div className="screen">
-      <div className="contacts-header"><BackButton onClick={onBack} /><div className="scan-title">Duplicated Contacts</div></div>
-      <InfoBanner text="SENTRY scans for contacts sharing the same name or with secondary numbers not present in your call/SMS history. These are potential Duplicated Contacts Attacks." />
-      <div className="algo-card"><div className="algo-title">Algorithm — How SENTRY Detects Duplicates</div>{ALGO_STEPS.map((step, i) => (<div key={i} className="algo-step"><div className="algo-step-num">{i + 1}</div><div className="algo-step-text"><strong>{step.text}</strong> — {step.desc}</div></div>))}</div>
-      <div className="section-title">⚠️ Suspicious Contacts (2)</div>
-      {!deleted.contact1 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Mom</div><div className="contact-tag dup">DUPLICATE NAME</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Original</div><div className="contact-num-value">010-1234-1234</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">010-9090-0909</div></div><div className="contact-num-row"><div className="contact-num-badge history">In call history</div><div className="contact-num-value">010-1234-1234 ✓</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact1", "Mom (010-9090-0909)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}
-      {!deleted.contact2 && (<div className="contact-item suspicious" style={{ transition: "all 0.4s ease" }}><div className="contact-header-row"><div className="contact-avatar suspicious">⚠️</div><div className="contact-name">Maybank CS</div><div className="contact-tag dup">UNKNOWN NUMBER</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge original">Known</div><div className="contact-num-value">1300-888-688</div></div><div className="contact-num-row"><div className="contact-num-badge attacker">Suspicious</div><div className="contact-num-value">011-5555-7777</div></div></div><div className="delete-row"><button className="del-btn" onClick={() => deleteContact("contact2", "Maybank CS (011-5555-7777)")}>🗑️ Delete Suspicious</button><button className="keep-btn">Keep Both</button></div></div>)}
-      <div className="section-title" style={{ marginTop: 6 }}>✅ Trusted Contacts</div>
-      <div className="contact-item whitelist"><div className="contact-header-row"><div className="contact-avatar whitelist">✅</div><div className="contact-name">Dad</div><div className="contact-tag ok">WHITELISTED</div></div><div className="contact-numbers"><div className="contact-num-row"><div className="contact-num-badge history">Call log</div><div className="contact-num-value">010-5678-5678</div></div></div><div className="whitelist-note">✓ Number found in recent call history — trusted</div></div>
-      <div style={{ height: 20 }} />
-    </div>
-  );
-};
-
-const HistoryScreen = ({ onResult }) => {
-  const [filter, setFilter] = useState("all");
-  const filtered = HISTORY_ITEMS.filter((item) => filter === "all" || item.type === filter);
-  return (
-    <div className="screen">
-      <div className="hist-screen-header"><div className="hist-screen-title">Detection History</div><div className="hist-screen-sub">All VENTINEL events & scan results</div></div>
-      <div className="hist-filter-row">{[["all", "All"], ["attack", "Attacks"], ["scan", "Transcript"], ["safe", "Safe"]].map(([key, label]) => (<div key={key} className={`hist-filter ${filter === key ? "active" : ""}`} onClick={() => setFilter(key)}>{label}</div>))}</div>
-      <div className="history-list">{filtered.map((item) => (<div key={item.id} className="history-item" onClick={() => onResult(item.level, item.title, item.desc, item.scam, item.warn, item.safe)}><div className={`hist-icon ${item.level}`}>{item.icon}</div><div className="hist-info"><div className="hist-name">{item.name}</div><div className="hist-time">{item.time}</div><div><span className={`hist-type-badge ${item.typeBadgeClass}`}>{item.typeBadge}</span></div></div><div className={`hist-badge ${item.level}`}>{item.badge}</div></div>))}</div>
-    </div>
-  );
-};
-
-const SettingsScreen = () => {
-  const [toggles, setToggles] = useState({ callRedirect: true, displayOverlay: true, dupContacts: true, alertPopup: true, vibration: true, voicePrompt: false });
-  const toggle = (key) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-  const sentryModules = [
-    { key: "callRedirect", icon: "📞", color: "blue", name: "Call Redirection Detection", desc: "Compare dialed vs. actual connected number" },
-    { key: "displayOverlay", icon: "🖥️", color: "purple", name: "Display Overlay Detection", desc: "OCR screen capture comparison via ML Kit" },
-    { key: "dupContacts", icon: "👥", color: "orange", name: "Duplicated Contacts Scan", desc: "Run when device is in IDLE state" },
-  ];
-  const alertModules = [
-    { key: "alertPopup", icon: "🔔", color: "red", name: "Alert Pop-up (SIGNALLER)", desc: "Show warning overlay on attack detection" },
-    { key: "vibration", icon: "📳", color: "green", name: "Vibration Alert", desc: "Vibrate device when attack is detected" },
-    { key: "voicePrompt", icon: "🗣️", color: "orange", name: "Voice Prompt Alert", desc: "Audio warning for wearable/Bluetooth users" },
-  ];
-  return (
-    <div className="screen">
-      <div className="settings-header"><div className="settings-title">Settings</div><div className="settings-sub">VENTINEL configuration & permissions</div></div>
-      <div className="settings-section"><div className="settings-section-label">SENTRY Detection Modules</div>{sentryModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div>
-      <div className="settings-section"><div className="settings-section-label">SIGNALLER Alerts</div>{alertModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div>
-      <div className="settings-section"><div className="settings-section-label">Android Permissions</div><div className="setting-item" style={{ cursor: "default", flexDirection: "column", alignItems: "stretch" }}><div className="algo-title" style={{ marginBottom: 12 }}>Required by SENTRY</div>{PERMISSIONS.map((p, i) => (<div key={i} className="perm-item"><div className={`perm-status ${p.granted ? "granted" : "denied"}`} /><div className="perm-name">{p.name}</div><div className="perm-desc">{p.desc}</div></div>))}</div></div>
-      <div style={{ height: 20 }} />
-    </div>
-  );
-};
+const SettingsScreen = () => { const [toggles, setToggles] = useState({ callRedirect: true, displayOverlay: true, dupContacts: true, alertPopup: true, vibration: true, voicePrompt: false }); const toggle = (key) => setToggles((prev) => ({ ...prev, [key]: !prev[key] })); const sentryModules = [ { key: "callRedirect", icon: "📞", color: "blue", name: "Call Redirection Detection", desc: "Compare dialed vs. actual connected number" }, { key: "displayOverlay", icon: "🖥️", color: "purple", name: "Display Overlay Detection", desc: "OCR screen capture comparison via ML Kit" }, { key: "dupContacts", icon: "👥", color: "orange", name: "Duplicated Contacts Scan", desc: "Run when device is in IDLE state" } ]; const alertModules = [ { key: "alertPopup", icon: "🔔", color: "red", name: "Alert Pop-up (SIGNALLER)", desc: "Show warning overlay on attack detection" }, { key: "vibration", icon: "📳", color: "green", name: "Vibration Alert", desc: "Vibrate device when attack is detected" }, { key: "voicePrompt", icon: "🗣️", color: "orange", name: "Voice Prompt Alert", desc: "Audio warning for wearable/Bluetooth users" } ]; return (<div className="screen"><div className="settings-header"><div className="settings-title">Settings</div><div className="settings-sub">VENTINEL configuration & permissions</div></div><div className="settings-section"><div className="settings-section-label">SENTRY Detection Modules</div>{sentryModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div><div className="settings-section"><div className="settings-section-label">SIGNALLER Alerts</div>{alertModules.map((m) => (<div key={m.key} className="setting-item" onClick={() => toggle(m.key)}><div className={`setting-icon ${m.color}`}>{m.icon}</div><div className="setting-body"><div className="setting-name">{m.name}</div><div className="setting-desc">{m.desc}</div></div><Toggle on={toggles[m.key]} /></div>))}</div><div className="settings-section"><div className="settings-section-label">Android Permissions</div><div className="setting-item" style={{ cursor: "default", flexDirection: "column", alignItems: "stretch" }}><div className="algo-title" style={{ marginBottom: 12 }}>Required by SENTRY</div>{PERMISSIONS.map((p, i) => (<div key={i} className="perm-item"><div className={`perm-status ${p.granted ? "granted" : "denied"}`} /><div className="perm-name">{p.name}</div><div className="perm-desc">{p.desc}</div></div>))}</div></div><div style={{ height: 20 }} /></div>); };
 
 export default function VoiceGuardApp() {
   const [screen, setScreen] = useState("home");
@@ -867,22 +130,17 @@ export default function VoiceGuardApp() {
   const [callMonitorMode, setCallMonitorMode] = useState("redirect");
   const contentRef = useRef(null);
 
-  const navigate = useCallback((screenName, nav) => {
-    setScreen(screenName);
-    setActiveNav(nav || screenName);
-    if (contentRef.current) contentRef.current.scrollTop = 0;
-  }, []);
+  const navigate = useCallback((screenName, nav) => { setScreen(screenName); setActiveNav(nav || screenName); if (contentRef.current) contentRef.current.scrollTop = 0; }, []);
 
   const goHome = () => navigate("home", "home");
   const goScan = () => navigate("scan", "scan");
   const goHistory = () => navigate("history", "history");
   const goSettings = () => navigate("settings", "settings");
   const goContacts = () => navigate("contacts", "home");
-
   const goCallMonitor = (mode) => { setCallMonitorMode(mode); navigate("callMonitor", "home"); };
 
-  const showResult = (type, title, desc, scam, warn, safe) => {
-    setResult({ type, title, desc, scam, warn, safe });
+  const showResult = (type, title, desc, scam, warn, safe, flags) => {
+    setResult({ type, title, desc, scam, warn, safe, flags: flags || [] });
     navigate("result", "scan");
   };
 
@@ -891,7 +149,7 @@ export default function VoiceGuardApp() {
     navigate("analyzing", "scan");
     try {
       const res = await analyzeTextAPI(text);
-      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
+      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe, res.flags);
     } catch (err) {
       console.error("Text analysis error:", err);
       alert("Analysis failed: " + (err.message || "Could not connect to backend. Is the server running on port 8000?"));
@@ -903,7 +161,7 @@ export default function VoiceGuardApp() {
     navigate("analyzing", "scan");
     try {
       const res = await analyzeAudioAPI(wavFile);
-      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe);
+      showResult(res.type, res.title, res.desc, res.scam, res.warn, res.safe, res.flags);
     } catch (err) {
       console.error("Audio analysis error:", err);
       alert("Analysis failed: " + (err.message || "Could not connect to backend. Is the server running on port 8000?"));
@@ -911,36 +169,9 @@ export default function VoiceGuardApp() {
     }
   };
 
-  const navItems = [
-    { id: "home", icon: "🏠", label: "Home", action: goHome },
-    { id: "scan", icon: "🔍", label: "Scan", action: goScan },
-    { id: "history", icon: "📋", label: "History", action: goHistory },
-    { id: "settings", icon: "⚙️", label: "Settings", action: goSettings },
-  ];
+  const navItems = [ { id: "home", icon: "🏠", label: "Home", action: goHome }, { id: "scan", icon: "🔍", label: "Scan", action: goScan }, { id: "history", icon: "📋", label: "History", action: goHistory }, { id: "settings", icon: "⚙️", label: "Settings", action: goSettings } ];
 
-  const renderScreen = () => {
-    switch (screen) {
-      case "home": return <HomeScreen onScan={goScan} onResult={showResult} onCallMonitor={goCallMonitor} onContacts={goContacts} />;
-      case "scan": return <ScanScreen onBack={goHome} onAnalyzeText={analyzeText} onAnalyzeAudio={analyzeAudio} />;
-      case "analyzing": return <AnalyzingScreen />;
-      case "result": return result && <ResultScreen onBack={goHome} onHome={goHome} onScan={goScan} result={result} />;
-      case "callMonitor": return <CallMonitorScreen onBack={goHome} mode={callMonitorMode} />;
-      case "contacts": return <ContactsScreen onBack={goHome} />;
-      case "history": return <HistoryScreen onResult={showResult} />;
-      case "settings": return <SettingsScreen />;
-      default: return null;
-    }
-  };
+  const renderScreen = () => { switch (screen) { case "home": return <HomeScreen onScan={goScan} onResult={showResult} onCallMonitor={goCallMonitor} onContacts={goContacts} />; case "scan": return <ScanScreen onBack={goHome} onAnalyzeText={analyzeText} onAnalyzeAudio={analyzeAudio} />; case "analyzing": return <AnalyzingScreen />; case "result": return result && <ResultScreen onBack={goHome} onHome={goHome} onScan={goScan} result={result} />; case "callMonitor": return <CallMonitorScreen onBack={goHome} mode={callMonitorMode} />; case "contacts": return <ContactsScreen onBack={goHome} />; case "history": return <HistoryScreen onResult={showResult} />; case "settings": return <SettingsScreen />; default: return null; } };
 
-  return (
-    <>
-      <style>{css}</style>
-      <div className="phone-frame">
-        <div className="notch"><div className="notch-dot" /><div className="notch-cam" /><div className="notch-dot" /></div>
-        <StatusBar />
-        <div className="app-content" ref={contentRef}>{renderScreen()}</div>
-        <div className="bottom-nav">{navItems.map((item) => (<button key={item.id} className={`nav-item ${activeNav === item.id ? "active" : ""}`} onClick={item.action}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span>{activeNav === item.id && <div className="nav-pip" />}</button>))}</div>
-      </div>
-    </>
-  );
+  return (<><style>{css}</style><div className="phone-frame"><div className="notch"><div className="notch-dot" /><div className="notch-cam" /><div className="notch-dot" /></div><StatusBar /><div className="app-content" ref={contentRef}>{renderScreen()}</div><div className="bottom-nav">{navItems.map((item) => (<button key={item.id} className={`nav-item ${activeNav === item.id ? "active" : ""}`} onClick={item.action}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span>{activeNav === item.id && <div className="nav-pip" />}</button>))}</div></div></>);
 }
