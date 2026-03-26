@@ -41,7 +41,11 @@ ENSEMBLE_FILE   = os.path.join(MODELS_DIR, 'soft_ensemble_weights.pkl')
 PHASE1_CKPT     = os.path.join(MODELS_DIR, 'soft_phase1_best.pth')
 PHASE2_CKPT     = os.path.join(MODELS_DIR, 'soft_phase2_best.pth')
 
-MANUAL_WEIGHT_BOOST = {'slightly_suspicious': 2.5}
+MANUAL_WEIGHT_BOOST = {
+    'neutral': 1.8,
+    'slightly_suspicious': 2.5,
+    'scam': 0.6,
+}
 
 RF_WEIGHT   = 0.40
 BERT_WEIGHT = 0.60
@@ -86,7 +90,7 @@ def train_rf_stack(df1, df2):
         n_estimators=200, max_depth=12, min_samples_leaf=4,
         min_samples_split=10, max_features='sqrt',
         random_state=42, n_jobs=-1,
-        class_weight=compute_weights(y1_train)
+        class_weight=compute_weights(y1_train, boost_override=MANUAL_WEIGHT_BOOST)
     )
     rf1.fit(X1_train, y1_train)
     print("RF1 validation:")

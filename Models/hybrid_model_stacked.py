@@ -8,7 +8,7 @@ from transformers import BertTokenizer, BertForSequenceClassification #type: ign
 from torch.optim import AdamW #type: ignore
 from sklearn.model_selection import train_test_split #type: ignore
 from sklearn.feature_extraction.text import TfidfVectorizer #type: ignore
-from sklearn.ensemble import RandomForestClassifier#type: ignore 
+from sklearn.ensemble import RandomForestClassifier#type: ignore
 from sklearn.linear_model import LogisticRegression#type: ignore
 from sklearn.metrics import classification_report, balanced_accuracy_score, accuracy_score #type: ignore
 from sklearn.calibration import CalibratedClassifierCV #type: ignore
@@ -41,7 +41,11 @@ META_FILE       = os.path.join(MODELS_DIR, 'meta_stacker.pkl')
 PHASE1_CKPT     = os.path.join(MODELS_DIR, 'phase1_best.pth')
 PHASE2_CKPT     = os.path.join(MODELS_DIR, 'phase2_best.pth')
 
-MANUAL_WEIGHT_BOOST = {'slightly_suspicious': 1.5}
+MANUAL_WEIGHT_BOOST = {
+    'neutral': 1.8,
+    'slightly_suspicious': 2.5,
+    'scam': 0.6,
+}
 
 def compute_weights(y, boost_override=None):
     classes = np.unique(y)
@@ -82,7 +86,7 @@ def train_rf_stack(df1, df2):
         n_estimators=200, max_depth=12, min_samples_leaf=4,
         min_samples_split=10, max_features='sqrt',
         random_state=42, n_jobs=-1,
-        class_weight=compute_weights(y1_train)
+        class_weight=compute_weights(y1_train, boost_override=MANUAL_WEIGHT_BOOST)
     )
     rf1.fit(X1_train, y1_train)
     print("RF1 validation:")

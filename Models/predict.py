@@ -7,9 +7,9 @@ os.environ["LOKY_MAX_CPU_COUNT"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
 
 import numpy as np
-import torch # type: ignore
-import joblib # type: ignore
-from transformers import BertTokenizer, BertForSequenceClassification, BertConfig # type: ignore
+import torch
+import joblib
+from transformers import BertTokenizer, BertForSequenceClassification, BertConfig
 
 LABEL_NAMES = ["neutral", "slightly_suspicious", "scam"]
 BERT_MODEL = "bert-base-multilingual-cased"
@@ -45,8 +45,7 @@ def _load_all():
 
     _tfidf = joblib.load(VECTORIZER_FILE)
 
-    bert_path = BERT_FILE
-    with open(bert_path, "rb") as f:
+    with open(BERT_FILE, "rb") as f:
         state_dict = torch.load(io.BytesIO(f.read()), map_location="cpu", weights_only=False)
 
     if "model_state_dict" in state_dict:
