@@ -1,4 +1,4 @@
-import assemblyai as aai # type: ignore
+import assemblyai as aai #type: ignore
 import os
 import subprocess
 from pathlib import Path
@@ -61,10 +61,6 @@ def transcribe_audio(audio_file_path):
             return None
         text = transcript.text
         print(f"Transcribed: {text[:100]}...")
-        save_path, base_name = save_transcript(
-            os.path.basename(audio_file_path), text
-        )
-        clean_with_rust(base_name, "raw")
         return text
     except Exception as e:
         print(f"Unexpected Error: {e}")
@@ -84,7 +80,8 @@ def process_all_audio_files():
     for i, audio_file in enumerate(audio_files, 1):
         print(f"\n[{i}/{len(audio_files)}] Processing: {audio_file}")
         audio_path = str(AUDIO_FOLDER / audio_file)
-        transcribe_audio(audio_path)
+        save_path, base_name = save_transcript(audio_file, transcribe_audio(audio_path))
+        clean_with_rust(base_name, "raw")
         print("-" * 60)
     print("\n" + "=" * 60)
     print("All audio files processed!")
